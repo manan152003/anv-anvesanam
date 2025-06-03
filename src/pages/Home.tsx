@@ -31,8 +31,8 @@ const Home: React.FC = () => {
           background: '#7C6B6B',
           borderRadius: '50%',
           filter: 'blur(900px)', // Reduced from 1205.8px for better browser support
-          right: '-600px', // Extend beyond edge
-          bottom: '-650px', // Extend beyond edge
+          right: '-700px', // Extend beyond edge
+          bottom: '-900px', // Extend beyond edge
           zIndex: 1,
           pointerEvents: 'none'
         }}
