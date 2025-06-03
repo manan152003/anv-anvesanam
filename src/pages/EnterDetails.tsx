@@ -5,6 +5,17 @@ interface LocationState {
   url: string
 }
 
+const CATEGORY_OPTIONS = [
+  'sci-fi',
+  'drama',
+  'comedy',
+  'documentary',
+  'action',
+  'romance',
+  'animation',
+  'other',
+]
+
 const EnterDetails: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -13,6 +24,9 @@ const EnterDetails: React.FC = () => {
   const [category, setCategory] = useState('')
   const [rating, setRating] = useState(0)
   const [review, setReview] = useState('')
+  const [categoryDropdown, setCategoryDropdown] = useState(false)
+  const [error, setError] = useState('')
+  const DESCRIPTION_LIMIT = 200;
 
   // Extract YouTube video ID from URL
   const getVideoId = (url: string) => {
@@ -31,7 +45,7 @@ const EnterDetails: React.FC = () => {
         const apiKey = import.meta.env.VITE_YT_KEY
         if (!apiKey || apiKey === 'your_youtube_api_key_here') {
           // Fallback: extract title from URL or use default
-          setTitle('just business, darling.')
+          setTitle('default')
           return
         }
 
@@ -55,6 +69,11 @@ const EnterDetails: React.FC = () => {
   }, [url])
 
   const handleSubmit = () => {
+    if (rating === 0) {
+      setError('Please select a star rating.');
+      return;
+    }
+    setError('');
     // TODO: Handle submission
     console.log({ url, title, category, rating, review })
   }
@@ -66,16 +85,14 @@ const EnterDetails: React.FC = () => {
         minHeight: '100vh',
         background: '#141414',
         margin: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+        padding: 0,
         position: 'fixed',
         top: 0,
         left: 0,
-        right: 0,
-        bottom: 0,
-        overflow: 'hidden'
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+        zIndex: 0,
       }}
     >
       {/* Background blur effect - bottom right ellipse */}
@@ -90,53 +107,63 @@ const EnterDetails: React.FC = () => {
           right: '-700px',
           bottom: '-900px',
           zIndex: 1,
-          pointerEvents: 'none'
+          pointerEvents: 'none',
         }}
       />
 
-      {/* Logo */}
-      <img
-        src="/logo.png"
-        alt="Anv Logo"
+      {/* Main 1440x1024 container */}
+      <div
         style={{
           position: 'absolute',
-          left: '32px',
-          top: '32px',
-          width: 'auto',
-          height: '30px',
-          zIndex: 10
+          top: 0,
+          left: 0,
+          width: '1440px',
+          height: '1024px',
+          maxWidth: '100vw',
+          maxHeight: '100vh',
+          background: 'none',
+          zIndex: 2,
         }}
-      />
+      >
+        {/* Logo */}
+        <img
+          src="/logo.png"
+          alt="Anv Logo"
+          style={{
+            position: 'absolute',
+            left: '19px',
+            top: '21px',
+            width: 'auto',
+            height: '60px',
+            zIndex: 10,
+          }}
+        />
 
-      {/* Main Content Container */}
-      <div style={{
-        width: '90%',
-        maxWidth: '1290px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '87px',
-        zIndex: 10,
-      }}>
         {/* Top Section - Thumbnail and URL/Cancel */}
         <div style={{
           display: 'flex',
           gap: '107px',
           alignItems: 'flex-start',
-          marginTop: '100px',
+          marginTop: '115px',
+          paddingLeft: '108px',
         }}>
           {/* Thumbnail */}
           <div style={{
+            position: 'relative',
             background: '#1A1A1A',
-            borderRadius: '24px',
+            borderRadius: '50px',
             overflow: 'hidden',
-            width: '502px',
-            height: '282px',
+            width: '533px',
+            height: '300px',
             flexShrink: 0,
+            border: '3px solid #848484',
           }}>
             {url && (
               <img
                 src={`https://img.youtube.com/vi/${getVideoId(url)}/hqdefault.jpg`}
                 alt="YouTube thumbnail"
+                width={533}
+                height={300}
                 style={{
                   width: '100%',
                   height: '100%',
@@ -144,6 +171,18 @@ const EnterDetails: React.FC = () => {
                 }}
               />
             )}
+            {/* SVG overlay */}
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              pointerEvents: 'none',
+            }}>
+              <svg width="101" height="102" viewBox="0 0 101 102" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.0417 13.125L79.9583 51L21.0417 88.875V13.125Z" stroke="#1A1A1A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
           </div>
 
           {/* URL and Cancel Section */}
@@ -152,38 +191,45 @@ const EnterDetails: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: '24px',
-            marginTop: '100px',
+            marginTop: '90px',
           }}>
             <input
               value={url}
               readOnly
               style={{
-                padding: '16px 24px',
-                background: 'rgba(20, 20, 20, 0.6)',
-                borderRadius: '28px',
-                color: '#DFD0B8',
+                background: '#1a1a1a',
+                borderRadius: '24px',
+                color: 'rgba(223, 208, 184, 0.6)',
                 fontFamily: 'Lora, serif',
-                fontSize: '18px',
-                opacity: 0.8,
-                border: '1px solid #DFD0B8',
-                width: '100%',
+                fontSize: '20px',
+                fontWeight: 700,
+                border: '3px solid rgba(223, 208, 184, 0.6)',
+                width: '650px',
+                height: '50px',
+                textAlign: 'center',
+                padding: '12px 75px',
+                boxShadow: 'inset 0 4px 4px 0 rgba(0, 0, 0, 0.25)',
               }}
               aria-label="YouTube URL"
             />
             <button
               onClick={() => navigate('/')}
               style={{
-                width: '160px',
-                padding: '10px 0',
-                borderRadius: '28px',
-                background: '#075B5E',
+                width: '200px',
+                height: '65px',
+                borderRadius: '30px',
                 border: '1px solid #AFB774',
-                color: '#DFD0B8',
+                background: '#075b5e',
+                color: '#dfd0b8',
                 fontFamily: 'Lora, serif',
-                fontSize: '18px',
+                fontWeight: 500,
+                fontSize: '24px',
+                textAlign: 'center',
+                opacity: 0.9,
                 cursor: 'pointer',
                 alignSelf: 'center',
-                fontWeight: 500,
+                marginTop: '24px',
+                display: 'block',
               }}
             >
               cancel
@@ -193,41 +239,42 @@ const EnterDetails: React.FC = () => {
 
         {/* Bottom Section - Form */}
         <div style={{
-          display: 'flex',
-          gap: '120px',
-          alignItems: 'flex-start',
-          marginTop: '-150px',
+          position: 'relative',
+          marginTop: '87px',
         }}>
-          {/* Left Column - Title and Review */}
+          {/* Left Column - Title and Review - positioned to align with thumbnail */}
           <div style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '40px',
+            position: 'absolute',
+            left: '108px', // Same as thumbnail left position
+            top: 0,
+            width: '533px', // Same width as thumbnail for alignment
           }}>
             {/* Title Section */}
-            <div>
+            <div style={{ marginBottom: '88px' }}>
               <div style={{
-                color: '#DFD0B8',
-                opacity: 0.6,
+                color: 'rgba(223, 208, 184, 0.6)',
                 fontFamily: 'Lora, serif',
-                fontSize: '16px',
-                marginBottom: '6px',
+                fontSize: '30px',
+                fontWeight: 400,
+                marginBottom: '15px',
               }}>
                 title
               </div>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                readOnly
                 style={{
                   width: '100%',
                   background: 'none',
                   border: 'none',
-                  color: '#DFD0B8',
+                  color: 'rgba(223, 208, 184, 1)',
                   fontFamily: 'Lora, serif',
-                  fontSize: '28px',
+                  fontSize: '50px',
                   fontWeight: 600,
                   outline: 'none',
+                  padding: 0,
+                  marginLeft: '50px',
                 }}
               />
             </div>
@@ -236,107 +283,164 @@ const EnterDetails: React.FC = () => {
             <div>
               <div style={{
                 color: '#DFD0B8',
-                opacity: 0.6,
                 fontFamily: 'Lora, serif',
-                fontSize: '20px',
-                fontWeight: 600,
-                marginBottom: '6px',
+                fontSize: '48px',
+                fontWeight: 400,
+                marginBottom: '8px',
               }}>
                 optional
               </div>
               <div style={{
                 color: '#DFD0B8',
-                opacity: 0.8,
                 fontFamily: 'Lora, serif',
-                fontSize: '16px',
-                marginBottom: '12px',
+                fontWeight: 400,
+                fontSize: '30px',
+                opacity: 0.6,
+                lineHeight: '128%',
+                textAlign: 'center',
+                marginBottom: '16px',
               }}>
                 why do you think its a great video ?
               </div>
-              <textarea
-                value={review}
-                onChange={(e) => setReview(e.target.value)}
-                style={{
-                  width: '320px',
-                  height: '90px',
-                  padding: '12px',
-                  background: '#DFD0B8',
-                  borderRadius: '12px',
-                  border: 'none',
-                  color: '#141414',
+              <div style={{ position: 'relative', width: '440px', height: '120px' }}>
+                <textarea
+                  value={review}
+                  onChange={(e) => {
+                    if (e.target.value.length <= DESCRIPTION_LIMIT) setReview(e.target.value)
+                  }}
+                  style={{
+                    width: '440px',
+                    height: '150px',
+                    padding: '16px',
+                    background: '#DFD0B8',
+                    borderRadius: '16px',
+                    border: 'none',
+                    color: '#141414',
+                    fontFamily: 'Lora, serif',
+                    fontSize: '20px',
+                    fontWeight: 400,
+                    resize: 'none',
+                    outline: 'none',
+                    marginLeft: '20px',
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  bottom: -20,
+                  right: 0,
+                  color: 'rgba(20,20,20,0.9)',
                   fontFamily: 'Lora, serif',
-                  fontSize: '16px',
-                  resize: 'none',
-                  outline: 'none',
-                }}
-              />
+                  fontSize: 14,
+                  opacity: 0.7,
+                  pointerEvents: 'none',
+                }}>
+                  {review.length}/{DESCRIPTION_LIMIT}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Right Column - Category, Star, Submit */}
+          {/* Right Column - Category, Star, Submit - positioned to align with URL section */}
           <div style={{
+            position: 'absolute',
+            left: '950px', // Position to align with URL section (108px + 533px + 107px gap)
+            top: 0,
             display: 'flex',
             flexDirection: 'column',
-            gap: '32px',
+            gap: '42px',
             alignItems: 'flex-start',
           }}>
             {/* Category Section */}
-            <div>
+            <div style={{ position: 'relative' }}>
               <div style={{
                 color: '#DFD0B8',
                 opacity: 0.6,
                 fontFamily: 'Lora, serif',
-                fontSize: '16px',
-                marginBottom: '6px',
+                fontSize: '30px',
+                fontWeight: 400,
+                marginBottom: '24px',
               }}>
                 category
               </div>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '8px',
+                position: 'relative',
               }}>
-                <input
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                <button
+                  type="button"
+                  onClick={() => setCategoryDropdown((v) => !v)}
                   style={{
-                    padding: '6px 18px',
+                    padding: '6px 30px',
                     background: 'rgba(26, 26, 26, 0.6)',
                     borderRadius: '20px',
-                    border: 'none',
+                    border: '1px solid #DFD0B8',
                     color: '#DFD0B8',
                     fontFamily: 'Lora, serif',
-                    fontSize: '28px',
-                    outline: 'none',
+                    fontSize: '25px',
                     fontWeight: 600,
+                    textAlign: 'center',             
+                    outline: 'none',
+                    cursor: 'pointer',
+                    minWidth: '120px',
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginLeft: '50px',
                   }}
-                  placeholder="sci-fi"
-                />
-                <button style={{
-                  padding: '6px',
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                }}>
-                  <span style={{ fontSize: '20px', color: '#DFD0B8' }}>⌄</span>
+                >
+                  {category || 'other'} 
+
                 </button>
+                {categoryDropdown && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    background: '#1A1A1A',
+                    border: '1px solid #DFD0B8',
+                    borderRadius: '20px',
+                    zIndex: 100,
+                    minWidth: '120px',
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
+                  }}>
+                    {CATEGORY_OPTIONS.map(opt => (
+                      <div
+                        key={opt}
+                        onClick={() => { setCategory(opt); setCategoryDropdown(false); }}
+                        style={{
+                          padding: '8px 16px',
+                          color: '#DFD0B8',
+                          fontFamily: 'Lora, serif',
+                          fontSize: '36px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          background: category === opt ? 'rgba(223,208,184,0.1)' : 'transparent',
+                        }}
+                      >
+                        {opt}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Star Rating */}
             <div>
               <div style={{
-                color: '#DFD0B8',
-                opacity: 0.6,
-                fontFamily: 'Lora, serif',
-                fontSize: '16px',
-                marginBottom: '6px',
+                color: 'rgba(223, 208, 184, 0.6)',
+                fontSize: '30px',
+                fontWeight: 400,
+                marginBottom: '2px',
               }}>
                 star
               </div>
               <div style={{
                 display: 'flex',
-                gap: '6px',
+                gap: '5px',
+                marginLeft: '50px',
               }}>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -346,7 +450,7 @@ const EnterDetails: React.FC = () => {
                       background: 'transparent',
                       border: 'none',
                       color: star <= rating ? '#FFD700' : '#DFD0B8',
-                      fontSize: '24px',
+                      fontSize: '40px',
                       cursor: 'pointer',
                       opacity: star <= rating ? 1 : 0.6,
                       padding: 0,
@@ -356,22 +460,41 @@ const EnterDetails: React.FC = () => {
                   </button>
                 ))}
               </div>
+              {error && (
+                <div style={{ 
+                  color: '#ff4d4f', 
+                  fontFamily: 'Lora, serif', 
+                  fontSize: 14, 
+                  marginTop: 16,
+                  textAlign: 'center',
+                  opacity: 0.75,  
+                  marginLeft: '50px',
+                }}>
+                  {error}
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}
             <button
               onClick={handleSubmit}
               style={{
-                padding: '10px 36px',
-                background: '#2B1B4B',
-                borderRadius: '20px',
-                border: 'none',
-                color: '#DFD0B8',
+                width: '200px',
+                height: '65px',
+                borderRadius: '30px',
+                border: '1px solid #afb774',
+                background: '#210f37',
+                color: '#dfd0b8',
                 fontFamily: 'Lora, serif',
-                fontSize: '16px',
+                fontWeight: 500,
+                fontSize: '24px',
+                textAlign: 'center',
+                opacity: 0.9,
                 cursor: 'pointer',
-                fontWeight: 600,
-                marginTop: 'auto',
+                marginTop: '20px',
+                alignSelf: 'center',
+                display: 'block',
+                marginLeft: '46px',
               }}
             >
               submit
@@ -383,4 +506,4 @@ const EnterDetails: React.FC = () => {
   )
 }
 
-export default EnterDetails 
+export default EnterDetails
