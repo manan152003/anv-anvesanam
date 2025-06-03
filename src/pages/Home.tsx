@@ -161,7 +161,7 @@ const Home: React.FC = () => {
               fontFamily: 'Lora, serif',
               textAlign: 'center',
               padding: '0 24px',
-              marginBottom: '34px',
+              marginBottom: '16px',
               outline: 'none',
               zIndex: 10,
             }}
@@ -187,6 +187,7 @@ const Home: React.FC = () => {
               fontWeight : '400',
               cursor: 'pointer',
               zIndex: 10,
+              marginTop: '16px',
             }}
           >
             Add Video
