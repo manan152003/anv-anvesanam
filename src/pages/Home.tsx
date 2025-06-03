@@ -1,25 +1,37 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+const YOUTUBE_REGEX = /^https:\/\/www\.youtube\.com\/watch\?v=[\w-]+$/
 
 const Home: React.FC = () => {
+  const [url, setUrl] = useState('')
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
+
+  const handleAddVideo = () => {
+    if (!YOUTUBE_REGEX.test(url.trim())) {
+      setError('Please enter a valid YouTube URL')
+      return
+    }
+    setError('')
+    navigate('/enter-details', { state: { url } })
+  }
+
   return (
-    <div 
-      style={{ 
-        width: '100vw',
-        height: '100vh',
+    <div
+      style={{
+        minWidth: '100vw',
+        minHeight: '100vh',
         background: '#141414',
         margin: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center', 
-        justifyContent: 'center',
-        padding: '0 20px',
-        maxWidth: '1440px',
-        maxHeight: '1024px',
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        overflow: 'hidden'
+        padding: 0,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+        zIndex: 0,
       }}
     >
       {/* Background blur effect - bottom right ellipse */}
@@ -30,123 +42,157 @@ const Home: React.FC = () => {
           height: '772px',
           background: '#7C6B6B',
           borderRadius: '50%',
-          filter: 'blur(900px)', // Reduced from 1205.8px for better browser support
-          right: '-700px', // Extend beyond edge
-          bottom: '-900px', // Extend beyond edge
+          filter: 'blur(900px)',
+          right: '-700px',
+          bottom: '-900px',
           zIndex: 1,
-          pointerEvents: 'none'
+          pointerEvents: 'none',
         }}
       />
 
-      {/* Logo */}
-      <img
-        src="/logo.png"
-        alt="Anv Logo"
+      {/* Main 1440x1024 container */}
+      <div
         style={{
           position: 'absolute',
-          left: '32px',
-          top: '32px',
-          width: 'auto',
-          height: '30px',
-          zIndex: 10
-        }}
-      />
-
-      {/* Main headline */}
-      <h1
-        style={{
-          fontFamily: '"Alfa Slab One", serif',
-          fontSize: '96px',
-          fontWeight: 'normal',
-          color: '#DFD0B8',
-          lineHeight: '1.1',
-          letterSpacing: '0',
-          margin: '0 0 0 0',
-          textAlign: 'left',
-          alignSelf: 'flex-start',
-          paddingLeft: '178px',
-          zIndex: 10
+          top: 0,
+          left: 0,
+          width: '1440px',
+          height: '1024px',
+          maxWidth: '100vw',
+          maxHeight: '100vh',
+          background: 'none',
+          zIndex: 2,
         }}
       >
-        Feeling Bored
-      </h1>
+        {/* Logo */}
+        <img
+          src="/logo.png"
+          alt="Anv Logo"
+          style={{
+            position: 'absolute',
+            left: '19px',
+            top: '21px',
+            width: 'auto',
+            height: '60px',
+            zIndex: 10,
+          }}
+        />
 
-      {/* Tagline */}
-      <p
-        style={{
-          fontFamily: 'Lora, serif',
-          fontSize: '24px',
-          fontWeight: 'normal',
-          color: '#DFD0B8',
-          opacity: '0.8',
-          margin: '0 0 0 0',
-          textAlign: 'left',
-          alignSelf: 'flex-start',
-          paddingLeft: '178px',
-          zIndex: 10
-        }}
-      >
-        Discover videos worth your time
-      </p>
+        {/* Headline and tagline */}
+        <div style={{
+          position: 'absolute',
+          top: '210px',
+          left: 0,
+          width: '100%',
+        }}>
+          <h1
+            style={{
+              fontFamily: 'Alfa Slab One, serif',
+              fontSize: '150px',
+              fontWeight: 'normal',
+              color: '#DFD0B8',
+              lineHeight: '1.1',
+              letterSpacing: '0',
+              textAlign: 'left',
+              paddingLeft: '178px',
+              zIndex: 10,
+            }}
+          >
+            Feeling Bored
+          </h1>
+          <p
+            style={{
+              fontFamily: 'Lora, serif',
+              fontWeight: '400',
+              fontSize: '36px',
+              color: '#DFD0B8',
+              opacity: '0.6',
+              margin: 0,
+              textAlign: 'left',
+              paddingLeft: '178px',
+              zIndex: 10,
+            }}
+          >
+            Discover videos worth your time
+          </p>
+        </div>
 
-      {/* Input label */}
-      <label
-        htmlFor="youtube-url"
-        style={{
-          fontFamily: 'Lora, serif',
-          fontSize: '16px',
-          fontWeight: '500',
-          color: '#DFD0B8',
-          opacity: '0.7',
-          marginTop: '108px',
-          marginBottom: '13px',
-          textAlign: 'center',
-          zIndex: 10
-        }}
-      >
-        Paste YouTube URL here...
-      </label>
-
-      {/* Input field */}
-      <input
-        id="youtube-url"
-        type="text"
-        style={{
-          width: '480px',
-          height: '44px',
-          borderRadius: '28px',
-          border: '2px solid #DFD0B8',
-          backgroundColor: '#1A1A1A',
-          color: '#DFD0B8',
-          fontSize: '18px',
-          fontFamily: 'Lora, serif',
-          padding: '0 24px',
-          marginBottom: '34px',
-          outline: 'none',
-          zIndex: 10
-        }}
-        placeholder=""
-      />
-
-      {/* Add Video button */}
-      <button
-        type="button"
-        style={{
-          width: '140px',
-          height: '44px',
-          borderRadius: '28px',
-          border: 'none',
-          backgroundColor: '#DFD0B8',
-          color: '#141414',
-          fontSize: '16px',
-          fontWeight: '600',
-          fontFamily: 'Lora, serif',
-          cursor: 'pointer',
-          zIndex: 10
-        }}
-      >
-        Add Video
-      </button>
+        {/* Input group */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '512px',
+            left: 0,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            zIndex: 10,
+          }}
+        >
+          <label
+            htmlFor="youtube-url"
+            style={{
+              fontFamily: 'Lora, serif',
+              fontSize: '24px',
+              color: '#DFD0B8',
+              opacity: '0.6',
+              marginBottom: '13px',
+              textAlign: 'center',
+              zIndex: 10,
+              fontWeight: '400',
+            }}
+          >
+            Paste YouTube URL here...
+          </label>
+          <input
+            id="youtube-url"
+            type="text"
+            value={url}
+            onChange={e => setUrl(e.target.value)}
+            style={{
+              width: '750px',
+              height: '50px',
+              borderRadius: '28px',
+              border: '3px solid rgba(223, 208, 184, 0.6)',
+              backgroundColor: '#1A1A1A',
+              color: '#DFD0B8',
+              fontSize: '20px', // Adjusted to match design spec
+              fontFamily: 'Lora, serif',
+              textAlign: 'center',
+              padding: '0 24px',
+              marginBottom: '34px',
+              outline: 'none',
+              zIndex: 10,
+            }}
+            placeholder=""
+          />
+          {error && (
+            <div style={{ color: '#ff4d4f', fontFamily: 'Lora, serif', fontSize: 14, marginBottom: 12, zIndex: 10, fontWeight: '400', opacity: '0.75' }}>
+              {error}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={handleAddVideo}
+            style={{
+              width: '200px',
+              height: '65px',
+              borderRadius: '30px',
+              border: 'none',
+              backgroundColor: '#DFD0B8',
+              color: 'rgba(20, 20, 20, 0.9)',
+              fontSize: '24px',
+              fontFamily: 'Lora, serif',
+              fontWeight : '400',
+              cursor: 'pointer',
+              zIndex: 10,
+            }}
+          >
+            Add Video
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
