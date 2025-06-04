@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const YOUTUBE_REGEX = /^https:\/\/www\.youtube\.com\/watch\?v=[\w-]+$/
 
@@ -7,6 +8,7 @@ const Home: React.FC = () => {
   const [url, setUrl] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
 
   const handleAddVideo = () => {
     if (!YOUTUBE_REGEX.test(url.trim())) {
@@ -14,6 +16,13 @@ const Home: React.FC = () => {
       return
     }
     setError('')
+
+    if (!isAuthenticated) {
+      // Navigate to login page with the current URL as state
+      navigate('/login', { state: { from: '/enter-details', url } })
+      return
+    }
+
     navigate('/enter-details', { state: { url } })
   }
 
@@ -25,13 +34,10 @@ const Home: React.FC = () => {
         background: '#141414',
         margin: 0,
         padding: 0,
-        position: 'fixed',
-        top: 0,
-        left: 0,
+        position: 'relative',
         width: '100vw',
         height: '100vh',
         overflow: 'hidden',
-        zIndex: 0,
       }}
     >
       {/* Background blur effect - bottom right ellipse */}
@@ -50,17 +56,15 @@ const Home: React.FC = () => {
         }}
       />
 
-      {/* Main 1440x1024 container */}
+      {/* Main content container */}
       <div
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '1440px',
-          height: '1024px',
-          maxWidth: '100vw',
-          maxHeight: '100vh',
-          background: 'none',
+          position: 'relative',
+          width: '100%',
+          maxWidth: '1440px',
+          height: '100%',
+          margin: '0 auto',
+          padding: '0 20px',
           zIndex: 2,
         }}
       >
@@ -79,12 +83,15 @@ const Home: React.FC = () => {
         />
 
         {/* Headline and tagline */}
-        <div style={{
-          position: 'absolute',
-          top: '210px',
-          left: 0,
-          width: '100%',
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '210px',
+            left: 0,
+            width: '100%',
+            zIndex: 10,
+          }}
+        >
           <h1
             style={{
               fontFamily: 'Alfa Slab One, serif',
@@ -95,7 +102,7 @@ const Home: React.FC = () => {
               letterSpacing: '0',
               textAlign: 'left',
               paddingLeft: '178px',
-              zIndex: 10,
+              margin: 0,
             }}
           >
             Feeling Bored
@@ -110,7 +117,6 @@ const Home: React.FC = () => {
               margin: 0,
               textAlign: 'left',
               paddingLeft: '178px',
-              zIndex: 10,
             }}
           >
             Discover videos worth your time
@@ -139,7 +145,6 @@ const Home: React.FC = () => {
               opacity: '0.6',
               marginBottom: '13px',
               textAlign: 'center',
-              zIndex: 10,
               fontWeight: '400',
             }}
           >
@@ -157,18 +162,26 @@ const Home: React.FC = () => {
               border: '3px solid rgba(223, 208, 184, 0.6)',
               backgroundColor: '#1A1A1A',
               color: '#DFD0B8',
-              fontSize: '20px', // Adjusted to match design spec
+              fontSize: '20px',
               fontFamily: 'Lora, serif',
               textAlign: 'center',
               padding: '0 24px',
               marginBottom: '16px',
               outline: 'none',
-              zIndex: 10,
             }}
             placeholder=""
           />
           {error && (
-            <div style={{ color: '#ff4d4f', fontFamily: 'Lora, serif', fontSize: 14, marginBottom: 12, zIndex: 10, fontWeight: '400', opacity: '0.75' }}>
+            <div
+              style={{
+                color: '#ff4d4f',
+                fontFamily: 'Lora, serif',
+                fontSize: 14,
+                marginBottom: 12,
+                fontWeight: '400',
+                opacity: '0.75',
+              }}
+            >
               {error}
             </div>
           )}
@@ -184,10 +197,14 @@ const Home: React.FC = () => {
               color: 'rgba(20, 20, 20, 0.9)',
               fontSize: '24px',
               fontFamily: 'Lora, serif',
-              fontWeight : '400',
               cursor: 'pointer',
-              zIndex: 10,
-              marginTop: '16px',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseOver={e => {
+              e.currentTarget.style.backgroundColor = '#C4B5A0'
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.backgroundColor = '#DFD0B8'
             }}
           >
             Add Video

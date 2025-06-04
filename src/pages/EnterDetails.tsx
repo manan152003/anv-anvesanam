@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 interface LocationState {
   url: string
@@ -15,12 +16,12 @@ const CATEGORY_OPTIONS = [
   'education',
   'vlog',
   'other',
-  ]
+]
 
 const EnterDetails: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { url } = location.state as LocationState
+  const { isAuthenticated } = useAuth()
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
   const [rating, setRating] = useState(0)
@@ -28,6 +29,22 @@ const EnterDetails: React.FC = () => {
   const [categoryDropdown, setCategoryDropdown] = useState(false)
   const [error, setError] = useState('')
   const DESCRIPTION_LIMIT = 200;
+
+  // Get URL from location state
+  const url = (location.state as LocationState)?.url
+
+  // Redirect if not authenticated or no URL
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/enter-details', url } })
+      return
+    }
+    
+    if (!url) {
+      navigate('/')
+      return
+    }
+  }, [isAuthenticated, navigate, url])
 
   // Extract YouTube video ID from URL
   const getVideoId = (url: string) => {
@@ -37,6 +54,8 @@ const EnterDetails: React.FC = () => {
 
   // Fetch YouTube video title
   useEffect(() => {
+    if (!url) return
+
     const fetchVideoTitle = async () => {
       const videoId = getVideoId(url)
       if (!videoId) return
@@ -77,6 +96,11 @@ const EnterDetails: React.FC = () => {
     setError('');
     // TODO: Handle submission
     console.log({ url, title, category, rating, review })
+  }
+
+  // If no URL, don't render the component
+  if (!url) {
+    return null
   }
 
   return (
