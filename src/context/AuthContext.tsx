@@ -40,35 +40,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      // TODO: Implement actual API call
-      // Mock login for now
-      const mockUser = {
-        id: '1',
-        email,
-        name: 'Test User',
-        username: 'testuser'
-      };
-      localStorage.setItem('authToken', 'mock-token');
-      setUser(mockUser);
-    } catch (error) {
-      throw new Error('Login failed');
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${apiUrl}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
+      const data = await response.json();
+      localStorage.setItem('authToken', data.token);
+      setUser({
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.name || '',
+        username: data.user.username || '',
+      });
+    } catch (error: any) {
+      throw new Error(error.message || 'Login failed');
     }
   };
 
   const signup = async (email: string, password: string, name: string, username: string) => {
     try {
-      // TODO: Implement actual API call
-      // Mock signup for now
-      const mockUser = {
-        id: '1',
-        email,
-        name,
-        username
-      };
-      localStorage.setItem('authToken', 'mock-token');
-      setUser(mockUser);
-    } catch (error) {
-      throw new Error('Signup failed');
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${apiUrl}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, username, name }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Signup failed');
+      }
+      const data = await response.json();
+      localStorage.setItem('authToken', data.token);
+      setUser({
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.name || '',
+        username: data.user.username || '',
+      });
+    } catch (error: any) {
+      throw new Error(error.message || 'Signup failed');
     }
   };
 

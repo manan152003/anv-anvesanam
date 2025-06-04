@@ -416,7 +416,6 @@ const EnterDetails: React.FC = () => {
                   }}
                 >
                   {category || 'other'} 
-
                 </button>
                 {categoryDropdown && (
                   <div style={{
@@ -427,8 +426,12 @@ const EnterDetails: React.FC = () => {
                     border: '1px solid #DFD0B8',
                     borderRadius: '20px',
                     zIndex: 100,
-                    minWidth: '120px',
+                    minWidth: '240px',
                     boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: '8px',
+                    padding: '8px',
                   }}>
                     {CATEGORY_OPTIONS.map(opt => (
                       <div
@@ -438,10 +441,12 @@ const EnterDetails: React.FC = () => {
                           padding: '8px 16px',
                           color: '#DFD0B8',
                           fontFamily: 'Lora, serif',
-                          fontSize: '36px',
+                          fontSize: '25px',
                           fontWeight: 600,
                           cursor: 'pointer',
                           background: category === opt ? 'rgba(223,208,184,0.1)' : 'transparent',
+                          borderRadius: '12px',
+                          textAlign: 'center',
                         }}
                       >
                         {opt}

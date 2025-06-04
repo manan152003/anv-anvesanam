@@ -26,8 +26,8 @@ const Signup = () => {
       await signup(email, password, name, username);
       // Redirect to login page with the original destination and URL
       navigate('/login', { state: { from, url }, replace: true });
-    } catch (err) {
-      setError('Failed to create account');
+    } catch (err: any) {
+      setError(err.message || 'Failed to create account');
     }
   };
 
