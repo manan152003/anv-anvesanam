@@ -1,22 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { getCategories } from '../services/categoryService'
+import type { Category } from '../types'
 
 interface LocationState {
   url: string
 }
-
-const CATEGORY_OPTIONS = [
-  'sci-fi',
-  'gaming',
-  'comedy',
-  'documentary',
-  'animation',
-  'music',
-  'education',
-  'vlog',
-  'other',
-]
 
 const EnterDetails: React.FC = () => {
   const location = useLocation()
@@ -24,14 +14,36 @@ const EnterDetails: React.FC = () => {
   const { isAuthenticated } = useAuth()
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
+  const [categories, setCategories] = useState<Category[]>([])
   const [rating, setRating] = useState(0)
   const [review, setReview] = useState('')
   const [categoryDropdown, setCategoryDropdown] = useState(false)
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
   const DESCRIPTION_LIMIT = 200;
 
   // Get URL from location state
   const url = (location.state as LocationState)?.url
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const fetchedCategories = await getCategories()
+        setCategories(fetchedCategories)
+        if (fetchedCategories.length > 0) {
+          setCategory(fetchedCategories[0].slug)
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+        setError('Failed to load categories')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCategories()
+  }, [])
 
   // Redirect if not authenticated or no URL
   useEffect(() => {
@@ -433,10 +445,10 @@ const EnterDetails: React.FC = () => {
                     gap: '8px',
                     padding: '8px',
                   }}>
-                    {CATEGORY_OPTIONS.map(opt => (
+                    {categories.map(cat => (
                       <div
-                        key={opt}
-                        onClick={() => { setCategory(opt); setCategoryDropdown(false); }}
+                        key={cat._id}
+                        onClick={() => { setCategory(cat.slug); setCategoryDropdown(false); }}
                         style={{
                           padding: '8px 16px',
                           color: '#DFD0B8',
@@ -444,12 +456,12 @@ const EnterDetails: React.FC = () => {
                           fontSize: '25px',
                           fontWeight: 600,
                           cursor: 'pointer',
-                          background: category === opt ? 'rgba(223,208,184,0.1)' : 'transparent',
+                          background: category === cat.slug ? 'rgba(223,208,184,0.1)' : 'transparent',
                           borderRadius: '12px',
                           textAlign: 'center',
                         }}
                       >
-                        {opt}
+                        {cat.name}
                       </div>
                     ))}
                   </div>
