@@ -7,14 +7,15 @@ interface LocationState {
 
 const CATEGORY_OPTIONS = [
   'sci-fi',
-  'drama',
+  'gaming',
   'comedy',
   'documentary',
-  'action',
-  'romance',
   'animation',
+  'music',
+  'education',
+  'vlog',
   'other',
-]
+  ]
 
 const EnterDetails: React.FC = () => {
   const location = useLocation()
