@@ -144,7 +144,7 @@ const EnterDetails: React.FC = () => {
             videoId
           }
         });
-      }, 1500);
+      }, 250);
     } catch (error) {
       console.error('Error submitting video:', error);
       setError(error instanceof Error ? error.message : 'Failed to submit video');

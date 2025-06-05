@@ -300,7 +300,7 @@ const Discover: React.FC = () => {
           {/* Buttons row centered below metadata */}
           <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
             <button
-              style={{ background: '#210f37', color: '#DFD0B8', border: 'none', borderRadius: 16, padding: '8px 24px', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}
+              style={{ background: '#210f37', color: '#DFD0B8', borderRadius: 16, padding: '8px 24px', fontSize: 15, fontWeight: 700, cursor: 'pointer', border: '1px solid #AFB774' }}
               onClick={e => {
                 e.stopPropagation();
                 const id = video.youtubeVideoId;
@@ -308,7 +308,7 @@ const Discover: React.FC = () => {
               }}
             >watch</button>
             <button
-              style={{ background: '#210f37', color: '#DFD0B8', border: 'none', borderRadius: 16, padding: '8px 24px', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}
+              style={{ background: '#210f37', color: '#DFD0B8', borderRadius: 16, padding: '8px 24px', fontSize: 15, fontWeight: 700, cursor: 'pointer', border: '1px solid #AFB774' }}
               onClick={e => {
                 e.stopPropagation();
                 alert('Add to lists coming soon!');
