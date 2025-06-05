@@ -7,6 +7,7 @@ import Home from './pages/Home'
 import EnterDetails from './pages/EnterDetails'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import Previews from './pages/Previews'
 
 const queryClient = new QueryClient()
 
@@ -24,6 +25,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <EnterDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home"
+              element={
+                <ProtectedRoute>
+                  <Previews />
                 </ProtectedRoute>
               }
             />

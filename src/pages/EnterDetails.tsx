@@ -22,6 +22,7 @@ const EnterDetails: React.FC = () => {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
   const DESCRIPTION_LIMIT = 200;
 
   // Get URL from location state
@@ -114,11 +115,22 @@ const EnterDetails: React.FC = () => {
       const submission = { url, title, category, rating, review, userId: user.id };
       console.log('Submitting video:', submission);
       await submitVideo(submission);
-      navigate('/'); // Navigate back to home on success
+      
+      // Show success message
+      setSuccessMessage('Your video is added.');
+      
+      // Redirect to home page after 1.5 seconds
+      setTimeout(() => {
+        navigate('/home', {
+          state: {
+            submittedVideoUrl: url,
+            videoTitle: title
+          }
+        });
+      }, 1500);
     } catch (error) {
       console.error('Error submitting video:', error);
       setError(error instanceof Error ? error.message : 'Failed to submit video');
-    } finally {
       setIsSubmitting(false);
     }
   }
@@ -526,6 +538,20 @@ const EnterDetails: React.FC = () => {
                   marginLeft: '50px',
                 }}>
                   {error}
+                </div>
+              )}
+              {successMessage && (
+                <div style={{ 
+                  color: '#52c41a', 
+                  fontFamily: 'Lora, serif', 
+                  fontSize: 16, 
+                  marginTop: 16,
+                  textAlign: 'center',
+                  opacity: 0.9,  
+                  marginLeft: '50px',
+                  fontWeight: 500,
+                }}>
+                  {successMessage}
                 </div>
               )}
             </div>
