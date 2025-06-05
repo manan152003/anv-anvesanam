@@ -24,6 +24,8 @@ const EnterDetails: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const DESCRIPTION_LIMIT = 200;
+  const [durationSeconds, setDurationSeconds] = useState<number | null>(null)
+  const [uploadDate, setUploadDate] = useState<string>('')
 
   // Get URL from location state
   const url = (location.state as LocationState)?.url
@@ -67,11 +69,11 @@ const EnterDetails: React.FC = () => {
     return match ? match[1] : null
   }
 
-  // Fetch YouTube video title
+  // Fetch YouTube video title, duration, and upload date
   useEffect(() => {
     if (!url) return
 
-    const fetchVideoTitle = async () => {
+    const fetchVideoDetails = async () => {
       const videoId = getVideoId(url)
       if (!videoId) return
 
@@ -79,28 +81,38 @@ const EnterDetails: React.FC = () => {
         // Check if API key exists
         const apiKey = import.meta.env.VITE_YT_KEY
         if (!apiKey || apiKey === 'your_youtube_api_key_here') {
-          // Fallback: extract title from URL or use default
           setTitle('default')
+          setDurationSeconds(0)
+          setUploadDate('')
           return
         }
 
         const response = await fetch(
-          `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet`
+          `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet,contentDetails`
         )
         const data = await response.json()
-        
         if (data.items && data.items.length > 0) {
           setTitle(data.items[0].snippet.title)
+          setUploadDate(data.items[0].snippet.publishedAt)
+          // Parse ISO 8601 duration
+          const iso = data.items[0].contentDetails.duration
+          const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+          const [, h, m, s] = match ? match.map(Number) : []
+          setDurationSeconds((h || 0) * 3600 + (m || 0) * 60 + (s || 0))
         } else {
           setTitle('title')
+          setDurationSeconds(0)
+          setUploadDate('')
         }
       } catch (error) {
-        console.error('Error fetching video title:', error)
+        console.error('Error fetching video details:', error)
         setTitle('title')
+        setDurationSeconds(0)
+        setUploadDate('')
       }
     }
 
-    fetchVideoTitle()
+    fetchVideoDetails()
   }, [url])
 
   const handleSubmit = async () => {
@@ -112,19 +124,24 @@ const EnterDetails: React.FC = () => {
     setIsSubmitting(true);
     try {
       if (!user) throw new Error('User not found');
-      const submission = { url, title, category, rating, review, userId: user.id };
+      const submission = {
+        url,
+        title,
+        category,
+        rating,
+        review,
+        userId: user.id,
+        duration_seconds: durationSeconds,
+        uploadDate_youtube: uploadDate,
+      };
       console.log('Submitting video:', submission);
-      await submitVideo(submission);
-      
+      const videoId = await submitVideo(submission);
       // Show success message
       setSuccessMessage('Your video is added.');
-      
-      // Redirect to home page after 1.5 seconds
       setTimeout(() => {
         navigate('/home', {
           state: {
-            submittedVideoUrl: url,
-            videoTitle: title
+            videoId
           }
         });
       }, 1500);

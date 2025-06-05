@@ -8,4 +8,12 @@ export const getCategories = async (): Promise<Category[]> => {
     throw new Error('Failed to fetch categories');
   }
   return response.json();
+};
+
+export const getCategoryById = async (categoryId: string): Promise<Category> => {
+  const response = await fetch(`${API_URL}/categories/${categoryId}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch category');
+  }
+  return response.json();
 }; 

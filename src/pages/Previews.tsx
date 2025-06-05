@@ -1,9 +1,11 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { getVideoById, getLatestSubmissionByVideoId } from '../services/videoService'
+import { getUserById } from '../services/userService'
+import { getCategoryById } from '../services/categoryService'
 
 interface LocationState {
-  submittedVideoUrl?: string
-  videoTitle?: string
+  videoId?: string
 }
 
 const Previews: React.FC = () => {
@@ -11,50 +13,102 @@ const Previews: React.FC = () => {
   const navigate = useNavigate()
   const state = location.state as LocationState
 
-  // Extract YouTube video ID from URL
-  const getVideoId = (url: string) => {
-    const match = url.match(/v=([\w-]+)/)
-    return match ? match[1] : null
+  const [video, setVideo] = useState<any>(null)
+  const [username, setUsername] = useState<string>('')
+  const [category, setCategory] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchVideo = async () => {
+      setLoading(true)
+      setError('')
+      try {
+        let data
+        if (state?.videoId) {
+          data = await getVideoById(state.videoId)
+        } else {
+          // Fetch all videos and pick a random one
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/videos`)
+          if (!res.ok) throw new Error('Failed to fetch videos')
+          const videos = await res.json()
+          if (!videos.length) throw new Error('No videos found')
+          data = videos[Math.floor(Math.random() * videos.length)]
+        }
+        setVideo(data)
+        // Fetch username
+        if (data.submitterUserId) {
+          try {
+            const user = await getUserById(data.submitterUserId)
+            setUsername(user.username ? `@${user.username}` : '@unknown')
+          } catch {
+            setUsername('@unknown')
+          }
+        } else {
+          setUsername('@unknown')
+        }
+        // Fetch latest submission and category name
+        try {
+          const submission = await getLatestSubmissionByVideoId(data._id)
+          if (submission && submission.categoryId) {
+            if (typeof submission.categoryId === 'object' && submission.categoryId.name) {
+              setCategory(submission.categoryId.name)
+            } else {
+              const cat = await getCategoryById(submission.categoryId)
+              setCategory(cat.name || '')
+            }
+          } else {
+            setCategory('')
+          }
+        } catch {
+          setCategory('')
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to load video')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchVideo()
+    // eslint-disable-next-line
+  }, [state?.videoId])
+
+  if (loading) {
+    return <div style={{ color: '#DFD0B8', fontFamily: 'Lora, serif', fontSize: 32, textAlign: 'center', marginTop: 100 }}>Loading...</div>
+  }
+  if (error || !video) {
+    return <div style={{ color: '#ff4d4f', fontFamily: 'Lora, serif', fontSize: 24, textAlign: 'center', marginTop: 100 }}>{error || 'Video not found'}</div>
   }
 
-  // Example data, replace with your actual video data
-  const video = {
-    thumbnail: 'https://img.youtube.com/vi/your_video_id/maxresdefault.jpg',
-    title: 'JUST BUSINESS, DARLING.',
-    year: 2025,
-    genre: 'sci-fi',
-    rating: 4.8,
-    submitter: '@naanroti',
-  };
+  // Get year from uploadDate_youtube
+  const year = video.uploadDate_youtube ? new Date(video.uploadDate_youtube).getFullYear() : '2025'
 
   return (
-    
     <div style={{ minHeight: '100vh', background: '#141414', color: '#DFD0B8' }}>
       {/* Header */}
       {/* Logo */}
       <img
-          src="/logo.png"
-          alt="Anv Logo"
-          style={{
-            position: 'absolute',
-            left: '19px',
-            top: '21px',
-            width: 'auto',
-            height: '60px',
-            zIndex: 10,
-            cursor: 'pointer',
-          }}
-          onClick={() => navigate('/')}
-        />
+        src="/logo.png"
+        alt="Anv Logo"
+        style={{
+          position: 'absolute',
+          left: '19px',
+          top: '21px',
+          width: 'auto',
+          height: '60px',
+          zIndex: 10,
+          cursor: 'pointer',
+        }}
+        onClick={() => navigate('/')}
+      />
       <div style={{
         width: '100%',
-        background: '#181818',
+        background: '#141414',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         height: '97px',
       }}>
-        
         {/* Nav */}
         <div style={{
           display: 'flex',
@@ -113,50 +167,91 @@ const Previews: React.FC = () => {
             </svg>
           </button>
           <img
-            src={video.thumbnail}
+            src={video.thumbnailUrl_youtube || video.thumbnailUrl || ''}
             alt="Video Thumbnail"
             width={1448}
             height={927}
             style={{
               width: '1448px',
               height: '927px',
-              borderRadius: '8px',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              borderRadius: '05px',
               objectFit: 'cover',
               maxWidth: '100%',
               display: 'block',
             }}
           />
+          {/* Black gradient for text readability */}
+          <div style={{
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            width: '100%',
+            height: '320px',
+            background: 'linear-gradient(180deg, rgba(20,20,20,0) 0%, rgba(10,10,10,0.5) 50%, rgba(10,10,10,0.98) 100%)',
+            borderRadius: '0 0 8px 8px',
+            zIndex: 2,
+            pointerEvents: 'none',
+          }} />
           {/* Overlayed Text */}
           <div style={{
             position: 'absolute',
             left: '60px',
-            top: '760px',
+            bottom: '40px',
             color: '#DFD0B8',
-            zIndex: 2,
+            zIndex: 3,
             width: '1330px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-end',
+            height: '240px',
             textShadow: '0 2px 8px rgba(0,0,0,0.7)',
+            overflow: 'hidden',
           }}>
-            <h1 style={{
-              fontFamily: 'Bellefair, serif',
-              fontSize: '75px',
-              fontWeight: 400,
-              margin: 0,
-            }}>
-              {video.title}
-            </h1>
             <div style={{
+              flex: 1,
               display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              fontFamily: 'Lora, serif',
-              fontWeight: 400,
-              fontSize: '20px',
-              marginTop: '5px',
-              width: '100%',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+              overflow: 'hidden',
             }}>
-              <div>{video.year} • {video.genre} • {video.rating}</div>
-              <div>submitted via <span style={{ fontWeight: 700 }}>{video.submitter}</span></div>
+              <h1 style={{
+                fontFamily: 'Bellefair, serif',
+                fontSize: '75px',
+                fontWeight: 400,
+                margin: 0,
+                wordBreak: 'break-word',
+                whiteSpace: 'normal',
+                lineHeight: 1.1,
+                maxHeight: '200px',
+                overflow: 'hidden',
+              }}>
+                {video.title_youtube || video.title}
+              </h1>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-end',
+                fontFamily: 'Lora, serif',
+                fontWeight: 400,
+                fontSize: '20px',
+                marginTop: '5px',
+                width: '100%',
+                gap: '20px',
+              }}>
+                <div style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '60%',
+                }}>{year} • {category} • 4.8</div>
+                <div style={{
+                  textAlign: 'right',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '40%',
+                }}>submitted via <span style={{ fontWeight: 700 }}>{username}</span></div>
+              </div>
             </div>
           </div>
         </div>
