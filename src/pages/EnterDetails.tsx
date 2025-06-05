@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getCategories } from '../services/categoryService'
+import { submitVideo } from '../services/videoService'
 import type { Category } from '../types'
 
 interface LocationState {
@@ -11,7 +12,7 @@ interface LocationState {
 const EnterDetails: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
   const [categories, setCategories] = useState<Category[]>([])
@@ -20,6 +21,7 @@ const EnterDetails: React.FC = () => {
   const [categoryDropdown, setCategoryDropdown] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const DESCRIPTION_LIMIT = 200;
 
   // Get URL from location state
@@ -89,25 +91,36 @@ const EnterDetails: React.FC = () => {
         if (data.items && data.items.length > 0) {
           setTitle(data.items[0].snippet.title)
         } else {
-          setTitle('just business, darling.')
+          setTitle('title')
         }
       } catch (error) {
         console.error('Error fetching video title:', error)
-        setTitle('just business, darling.')
+        setTitle('title')
       }
     }
 
     fetchVideoTitle()
   }, [url])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (rating === 0) {
       setError('Please select a star rating.');
       return;
     }
     setError('');
-    // TODO: Handle submission
-    console.log({ url, title, category, rating, review })
+    setIsSubmitting(true);
+    try {
+      if (!user) throw new Error('User not found');
+      const submission = { url, title, category, rating, review, userId: user.id };
+      console.log('Submitting video:', submission);
+      await submitVideo(submission);
+      navigate('/'); // Navigate back to home on success
+    } catch (error) {
+      console.error('Error submitting video:', error);
+      setError(error instanceof Error ? error.message : 'Failed to submit video');
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   // If no URL, don't render the component
@@ -520,6 +533,7 @@ const EnterDetails: React.FC = () => {
             {/* Submit Button */}
             <button
               onClick={handleSubmit}
+              disabled={isSubmitting}
               style={{
                 width: '200px',
                 height: '65px',
@@ -531,15 +545,15 @@ const EnterDetails: React.FC = () => {
                 fontWeight: 500,
                 fontSize: '24px',
                 textAlign: 'center',
-                opacity: 0.9,
-                cursor: 'pointer',
+                opacity: isSubmitting ? 0.5 : 0.9,
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 marginTop: '20px',
                 alignSelf: 'center',
                 display: 'block',
                 marginLeft: '46px',
               }}
             >
-              submit
+              {isSubmitting ? 'submitting...' : 'submit'}
             </button>
           </div>
         </div>

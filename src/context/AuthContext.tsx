@@ -27,13 +27,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const token = localStorage.getItem('authToken');
     if (token) {
       // TODO: Validate token with backend
-      // For now, we'll just set a mock user
-      setUser({
-        id: '1',
-        email: 'user@example.com',
-        name: 'Test User',
-        username: 'testuser'
-      });
+      // For now, we'll just clear the token if it exists but is invalid
+      localStorage.removeItem('authToken');
     }
     setIsLoading(false);
   }, []);
