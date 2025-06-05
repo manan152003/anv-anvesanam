@@ -18,6 +18,7 @@ const Previews: React.FC = () => {
   const [category, setCategory] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -36,18 +37,7 @@ const Previews: React.FC = () => {
           data = videos[Math.floor(Math.random() * videos.length)]
         }
         setVideo(data)
-        // Fetch username
-        if (data.submitterUserId) {
-          try {
-            const user = await getUserById(data.submitterUserId)
-            setUsername(user.username ? `@${user.username}` : '@unknown')
-          } catch {
-            setUsername('@unknown')
-          }
-        } else {
-          setUsername('@unknown')
-        }
-        // Fetch latest submission and category name
+        // Fetch latest submission and category name, and username
         try {
           const submission = await getLatestSubmissionByVideoId(data._id)
           if (submission && submission.categoryId) {
@@ -60,8 +50,15 @@ const Previews: React.FC = () => {
           } else {
             setCategory('')
           }
+          // Set username from latest submission
+          if (submission && submission.userId && submission.userId.username) {
+            setUsername(`@${submission.userId.username}`)
+          } else {
+            setUsername('@unknown')
+          }
         } catch {
           setCategory('')
+          setUsername('@unknown')
         }
       } catch (err: any) {
         setError(err.message || 'Failed to load video')
@@ -72,6 +69,19 @@ const Previews: React.FC = () => {
     fetchVideo()
     // eslint-disable-next-line
   }, [state?.videoId])
+
+  useEffect(() => {
+    if (!video) return;
+    const videoId = video.youtubeVideoId || (video.thumbnailUrl_youtube && video.thumbnailUrl_youtube.split('/')[4]);
+    if (!videoId) return;
+    const maxres = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    const hq = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    // Try maxres, fallback to hq if 404
+    fetch(maxres, { method: 'HEAD' }).then(res => {
+      if (res.ok) setThumbnailUrl(maxres);
+      else setThumbnailUrl(hq);
+    }).catch(() => setThumbnailUrl(hq));
+  }, [video]);
 
   if (loading) {
     return <div style={{ color: '#DFD0B8', fontFamily: 'Lora, serif', fontSize: 32, textAlign: 'center', marginTop: 100 }}>Loading...</div>
@@ -167,7 +177,7 @@ const Previews: React.FC = () => {
             </svg>
           </button>
           <img
-            src={video.thumbnailUrl_youtube || video.thumbnailUrl || ''}
+            src={thumbnailUrl}
             alt="Video Thumbnail"
             width={1448}
             height={927}

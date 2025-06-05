@@ -8,6 +8,8 @@ import EnterDetails from './pages/EnterDetails'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Previews from './pages/Previews'
+import Discover from './pages/Discover'
+import About from './pages/About'
 
 const queryClient = new QueryClient()
 
@@ -36,6 +38,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/discover" element={<Discover />} />
+            <Route path="/about" element={<About />} />
           </Routes>
         </Router>
       </AuthProvider>
