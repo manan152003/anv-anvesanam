@@ -218,7 +218,7 @@ const Discover: React.FC = () => {
               marginTop: 12,
             }}
           >
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 15, color: '#DFD0B8', fontWeight: 400 }}>
+            <div style={{ display: 'flex', gap: 5, alignItems: 'center', fontSize: 15, color: '#DFD0B8', fontWeight: 400 }}>
               <span>{getCategoryName(video)}</span>
               <span>•</span>
               <span>4.8</span>
@@ -433,11 +433,11 @@ const Discover: React.FC = () => {
       {tab === 'default' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 32, marginTop: 32, marginLeft: 32 }}>
           <div style={{ fontSize: 20, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => setSortOpen(s => !s)}>
-            SORT BY <span style={{ fontSize: 18, marginLeft: 4 }}>⚲</span>
+            SORT BY
             {sortOpen && (
               <div style={{ position: 'absolute', background: '#1A1A1A', border: '1px solid #DFD0B8', borderRadius: 12, marginTop: 40, zIndex: 20, padding: 16 }}>
                 {SORT_OPTIONS.map(opt => (
-                  <div key={opt.value} style={{ padding: 8, cursor: 'pointer', color: sort === opt.value ? '#FFD700' : '#DFD0B8', fontWeight: sort === opt.value ? 700 : 400 }} onClick={() => { setSort(opt.value); setSortOpen(false); }}>{opt.label}</div>
+                  <div key={opt.value} style={{ padding: 8, cursor: 'pointer', color: sort === opt.value ? '#FFFFFF' : '#DFD0B8', fontWeight: sort === opt.value ? 700 : 400 }} onClick={() => { setSort(opt.value); setSortOpen(false); }}>{opt.label}</div>
                 ))}
               </div>
             )}

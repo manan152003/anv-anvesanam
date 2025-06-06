@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { getVideoById, getLatestSubmissionByVideoId } from '../services/videoService'
 import { getUserById } from '../services/userService'
 import { getCategoryById } from '../services/categoryService'
+import AddToListModal from '../components/AddToListModal'
 
 interface LocationState {
   videoId?: string
@@ -19,6 +20,7 @@ const Previews: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [thumbnailUrl, setThumbnailUrl] = useState('');
+  const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -171,6 +173,7 @@ const Previews: React.FC = () => {
               cursor: 'pointer',
               zIndex: 3,
             }}
+            onClick={() => setIsAddToListModalOpen(true)}
           >
             <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M15 6.25V23.75M6.25 15H23.75" stroke="#1A1A1A" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
@@ -266,6 +269,15 @@ const Previews: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Add to List Modal */}
+      {video && (
+        <AddToListModal
+          isOpen={isAddToListModalOpen}
+          onClose={() => setIsAddToListModalOpen(false)}
+          videoId={video._id}
+        />
+      )}
     </div>
   )
 }
