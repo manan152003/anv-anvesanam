@@ -11,6 +11,8 @@ import Previews from './pages/Previews'
 import Discover from './pages/Discover'
 import About from './pages/About'
 import ListView from './pages/ListView'
+import Profile from './pages/Profile'
+import ProfilePublic from './pages/ProfilePublic'
 
 const queryClient = new QueryClient()
 
@@ -36,12 +38,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Previews />
+                  
                 </ProtectedRoute>
               }
             />
             <Route path="/discover" element={<Discover />} />
             <Route path="/about" element={<About />} />
             <Route path="/lists/:listId" element={<ListView />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:username" element={<ProfilePublic />} />
           </Routes>
         </Router>
       </AuthProvider>

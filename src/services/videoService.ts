@@ -89,4 +89,10 @@ export const getLatestSubmissionByVideoId = async (videoId: string) => {
   const res = await fetch(`${API_URL}/submissions/latest/${videoId}`);
   if (!res.ok) throw new Error('Failed to fetch latest submission');
   return res.json();
+};
+
+export const getSubmissionsByUser = async (userId: string) => {
+  const res = await fetch(`${API_URL}/submissions?userId=${userId}`);
+  if (!res.ok) throw new Error('Failed to fetch submissions');
+  return res.json();
 }; 

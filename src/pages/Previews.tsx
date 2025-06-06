@@ -263,7 +263,13 @@ const Previews: React.FC = () => {
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   maxWidth: '40%',
-                }}>submitted via <span style={{ fontWeight: 700 }}>{username}</span></div>
+                }}>
+                  submitted via <span style={{ fontWeight: 700, cursor: 'pointer' }} onClick={() => {
+                    if (username && username.startsWith('@')) {
+                      navigate(`/profile/${username.slice(1)}`);
+                    }
+                  }}>{username}</span>
+                </div>
               </div>
             </div>
           </div>
