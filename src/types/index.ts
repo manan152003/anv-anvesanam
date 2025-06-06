@@ -9,7 +9,7 @@ export interface List {
   name: string;
   userId: string;
   videoItems: {
-    videoId: string;
+    videoId: string | { _id: string; title?: string; thumbnailUrl?: string };
     submissionId?: string;
     addedAt: Date;
   }[];

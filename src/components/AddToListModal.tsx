@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserLists, createList, addVideoToList } from '../services/listService';
 import type { List } from '../types';
+import { useNavigate } from 'react-router-dom';
+import ListViewModal from './ListViewModal';
 
 interface AddToListModalProps {
   isOpen: boolean;
@@ -11,12 +13,14 @@ interface AddToListModalProps {
 
 const AddToListModal = ({ isOpen, onClose, videoId }: AddToListModalProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [lists, setLists] = useState<List[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [newListName, setNewListName] = useState('');
   const [isCreatingList, setIsCreatingList] = useState(false);
   const [selectedLists, setSelectedLists] = useState<Set<string>>(new Set());
+  const [viewingListId, setViewingListId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && user) {
@@ -166,7 +170,7 @@ const AddToListModal = ({ isOpen, onClose, videoId }: AddToListModalProps) => {
                   onChange={() => toggleListSelection(list._id)}
                   style={{ marginRight: '12px' }}
                 />
-                <div>
+                <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '16px', fontWeight: 500 }}>
                     {list.name}
                     {list.isDefault && (
@@ -179,6 +183,12 @@ const AddToListModal = ({ isOpen, onClose, videoId }: AddToListModalProps) => {
                     {list.videoItems.length} videos
                   </div>
                 </div>
+                <button
+                  onClick={() => setViewingListId(list._id)}
+                  style={{ marginLeft: 12, color: '#AFB774', background: 'none', border: '1px solid #AFB774', borderRadius: 8, padding: '4px 12px', cursor: 'pointer' }}
+                >
+                  View
+                </button>
               </div>
             ))}
           </div>
@@ -216,6 +226,12 @@ const AddToListModal = ({ isOpen, onClose, videoId }: AddToListModalProps) => {
           </button>
         </div>
       </div>
+      <ListViewModal
+        listId={viewingListId}
+        isOpen={!!viewingListId}
+        onClose={() => setViewingListId(null)}
+        onListDeleted={fetchLists}
+      />
     </div>
   );
 };

@@ -32,6 +32,10 @@ export const addVideoToList = async (listId: string, videoId: string): Promise<L
   });
 };
 
+export const getListDetails = async (listId: string): Promise<List> => {
+  return apiRequest<List>(`/lists/${listId}`);
+};
+
 export const removeVideoFromList = async (listId: string, videoId: string): Promise<List> => {
   return apiRequest<List>(`/lists/${listId}/videos/${videoId}`, {
     method: 'DELETE',

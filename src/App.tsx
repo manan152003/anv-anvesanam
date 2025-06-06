@@ -10,6 +10,7 @@ import Signup from './pages/Signup'
 import Previews from './pages/Previews'
 import Discover from './pages/Discover'
 import About from './pages/About'
+import ListView from './pages/ListView'
 
 const queryClient = new QueryClient()
 
@@ -40,6 +41,7 @@ function App() {
             />
             <Route path="/discover" element={<Discover />} />
             <Route path="/about" element={<About />} />
+            <Route path="/lists/:listId" element={<ListView />} />
           </Routes>
         </Router>
       </AuthProvider>
