@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getUserLists, getListsByUser } from '../services/listService';
 import { getSubmissionsByUser, getVideoById } from '../services/videoService';
 import { getFollowingUsers, getUserByUsername } from '../services/userService';
+import { getYouTubeThumbnail } from '../utils/youtube';
 
 // Critique: This page is almost identical to Profile, but loads user by username param, not from auth.
 // Critique: For now, use fetch(`/api/users/by-username/:username`) for user info. Add follow/unfollow button if not self.
@@ -62,7 +63,9 @@ const ProfilePublic: React.FC = () => {
             fav.videoItems.slice(0, 3).map(async (item: any) => {
               if (typeof item.videoId === 'object') return item.videoId;
               try {
-                return await getVideoById(item.videoId);
+                const videoId = typeof item.videoId === 'object' ? item.videoId._id : item.videoId;
+                if (!videoId) return null;
+                return await getVideoById(videoId);
               } catch {
                 return null;
               }
@@ -81,6 +84,7 @@ const ProfilePublic: React.FC = () => {
               try {
                 // Handle both string and object videoIds
                 const videoId = typeof submission.videoId === 'object' ? submission.videoId._id : submission.videoId;
+                if (!videoId) return null;
                 const video = await getVideoById(videoId);
                 return { ...video, rating: submission.rating, submissionId: submission._id };
               } catch {
@@ -143,11 +147,9 @@ const ProfilePublic: React.FC = () => {
   if (error || !profileUser) return <div style={{ color: '#ff4d4f', fontFamily: 'Lora, serif', fontSize: 24, textAlign: 'center', marginTop: 100 }}>{error || 'Profile not found'}</div>;
 
   // Helper to get video thumbnail
-  const getThumbnail = (item: any) => {
-    if (item.videoId && typeof item.videoId === 'object' && item.videoId.thumbnailUrl) {
-      return item.videoId.thumbnailUrl;
-    }
-    return '/logo.png';
+  const getThumbnail = (video: any) => {
+    if (!video) return '/logo.png';
+    return video.thumbnailUrl_youtube || '/logo.png';
   };
   // Helper to get video title
   const getTitle = (item: any) => {
@@ -232,8 +234,10 @@ const ProfilePublic: React.FC = () => {
           ) : (
             favVideos.map((video: any, idx: number) => (
               <div key={video._id || idx} style={{ width: 320, height: 180, borderRadius: 32, overflow: 'hidden', background: '#1A1A1A', border: '3px solid #848484', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} 
-              onClick={() => navigate('/home', { state: { videoId: video._id } })}>
-                <img src={video.thumbnailUrl_youtube || video.thumbnailUrl || '/logo.png'} alt={video.title_youtube || video.title || 'Untitled'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 32 }} />
+              onClick={e => {
+                navigate('/home', { state: { videoId: video._id } });
+              }}>
+                <img src={getThumbnail(video)} alt={video.title_youtube || video.title || 'Untitled'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 32 }} />
               </div>
             ))
           )}
@@ -247,9 +251,10 @@ const ProfilePublic: React.FC = () => {
             <div style={{ color: '#AFB774' }}>No recent activity.</div>
           ) : (
             recentActivities.map((video: any, idx: number) => (
-              <div key={video._id || idx} style={{ width: 320, height: 180, borderRadius: 32, overflow: 'hidden', background: '#1A1A1A', border: '3px solid #848484', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer' }} 
-              onClick={() => navigate('/home', { state: { videoId: video._id } })}>
-                <img src={video.thumbnailUrl_youtube || video.thumbnailUrl || '/logo.png'} alt={video.title_youtube || video.title || 'Untitled'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 32 }} />
+              <div key={video._id || idx} style={{ width: 320, height: 180, borderRadius: 32, overflow: 'hidden', background: '#1A1A1A', border: '3px solid #848484', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer' }} onClick={e => {
+                navigate('/home', { state: { videoId: video._id } });
+              }}>
+                <img src={getThumbnail(video)} alt={video.title_youtube || video.title || 'Untitled'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 32 }} />
               </div>
             ))
           )}

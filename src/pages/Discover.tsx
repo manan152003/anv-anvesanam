@@ -5,6 +5,7 @@ import { getLatestSubmissionByVideoId } from '../services/videoService';
 import AddToListModal from '../components/AddToListModal';
 import { useAuth } from '../context/AuthContext';
 import { useSwipeable } from 'react-swipeable';
+import { getYouTubeThumbnail } from '../utils/youtube';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -134,8 +135,8 @@ const Discover: React.FC = () => {
 
   // Helper to get video thumbnail
   const getThumbnail = (video: Video) => {
-    const id = video.youtubeVideoId || (video.thumbnailUrl_youtube && video.thumbnailUrl_youtube.split('/')[4]);
-    return id ? `https://img.youtube.com/vi/${id}/maxresdefault.jpg` : '/logo.png';
+    if (!video) return '/logo.png';
+    return video.thumbnailUrl_youtube || '/logo.png';
   };
 
   // Helper to get category name from latest submission
@@ -193,191 +194,109 @@ const Discover: React.FC = () => {
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
-              whiteSpace: 'normal',
-              textOverflow: 'ellipsis',
-              alignSelf: 'flex-start',
             }}
           >
-            {video.title_youtube}
+            {video.title_youtube || 'Untitled'}
           </div>
-          {/* Description (centered) */}
+          {/* Description */}
           <div
             style={{
               fontSize: 16,
-              margin: '18px 0',
-              textAlign: 'center',
-              maxWidth: 340,
-              color: '#DFD0B8',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'normal',
-              fontWeight: 400,
-              alignSelf: 'center',
-            }}
-          >
-            <span style={{ fontWeight: 700 }}>description:</span> <span>{video.bestDescription}</span>
-          </div>
-          {/* Bottom row: metadata left, buttons right */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-              marginTop: 12,
-            }}
-          >
-            <div style={{ display: 'flex', gap: 5, alignItems: 'center', fontSize: 15, color: '#DFD0B8', fontWeight: 400 }}>
-              <span>{getCategoryName(video)}</span>
-              <span>•</span>
-              <span>4.8</span>
-              <span>•</span>
-              <span>{formatDuration(video.duration_seconds)}</span>
-            </div>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button
-                style={{ background: '#210f37', color: '#DFD0B8', borderRadius: 16, padding: '4px 12px', fontSize: 15, fontWeight: 700, cursor: 'pointer', border: '1px solid #AFB774' }}
-                onClick={e => {
-                  e.stopPropagation();
-                  const id = video.youtubeVideoId;
-                  if (id) window.open(`https://www.youtube.com/watch?v=${id}`, '_blank');
-                }}
-              >watch</button>
-              <button
-                style={{ background: '#210f37', color: '#DFD0B8',  borderRadius: 16, padding: '4px 12px', fontSize: 15, fontWeight: 700, cursor: 'pointer', border: '1px solid #AFB774' }}
-                onClick={e => {
-                  e.stopPropagation();
-                  setSelectedVideoId(video._id);
-                  setIsAddToListModalOpen(true);
-                }}
-              >add to lists</button>
-            </div>
-          </div>
-        </div>
-      );
-    } else {
-      // Without description: old layout, all centered
-      return (
-        <div
-          style={{
-            position: 'absolute' as 'absolute',
-            inset: 0,
-            background: 'rgba(20,20,20,0.55)',
-            color: '#DFD0B8',
-            borderRadius: 32,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: 28,
-            opacity: 1,
-            pointerEvents: 'auto' as 'auto',
-            zIndex: 2,
-            boxShadow: '0 2px 16px rgba(0,0,0,0.12)',
-            backdropFilter: 'blur(10px)',
-            transition: 'transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s',
-          }}
-        >
-          {/* Title centered */}
-          <div
-            style={{
-              fontFamily: 'Bellefair, serif',
-              fontSize: 28,
-              fontWeight: 700,
-              marginBottom: 16,
-              textAlign: 'center',
-              maxWidth: 340,
-              lineHeight: 1.1,
+              lineHeight: 1.4,
+              opacity: 0.9,
               overflow: 'hidden',
               display: '-webkit-box',
-              WebkitLineClamp: 2,
+              WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
-              whiteSpace: 'normal',
-              textOverflow: 'ellipsis',
-              alignSelf: 'center',
             }}
           >
-            {video.title_youtube}
-          </div>
-          {/* Metadata row centered below title */}
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 15, color: '#DFD0B8', fontWeight: 400, marginBottom: 18 }}>
-            <span>{getCategoryName(video)}</span>
-            <span>•</span>
-            <span>4.8</span>
-            <span>•</span>
-            <span>{formatDuration(video.duration_seconds)}</span>
-          </div>
-          {/* Buttons row centered below metadata */}
-          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-            <button
-              style={{ background: '#210f37', color: '#DFD0B8', borderRadius: 16, padding: '8px 24px', fontSize: 15, fontWeight: 700, cursor: 'pointer', border: '1px solid #AFB774' }}
-              onClick={e => {
-                e.stopPropagation();
-                const id = video.youtubeVideoId;
-                if (id) window.open(`https://www.youtube.com/watch?v=${id}`, '_blank');
-              }}
-            >watch</button>
-            <button
-              style={{ background: '#210f37', color: '#DFD0B8', borderRadius: 16, padding: '8px 24px', fontSize: 15, fontWeight: 700, cursor: 'pointer', border: '1px solid #AFB774' }}
-              onClick={e => {
-                e.stopPropagation();
-                setSelectedVideoId(video._id);
-                setIsAddToListModalOpen(true);
-              }}
-            >add to lists</button>
+            {video.bestDescription}
           </div>
         </div>
       );
     }
-  };
-
-  // Video Card
-  const VideoCard = ({ video, cardWidth = 340, cardHeight = 210, disableHover = false }: { video: Video, cardWidth?: number, cardHeight?: number, disableHover?: boolean }) => {
-    const [hovered, setHovered] = useState(false);
-    const showHover = !disableHover && hovered;
+    // Without description: single-row layout
     return (
       <div
         style={{
+          position: 'absolute' as 'absolute',
+          inset: 0,
+          background: 'rgba(20,20,20,0.55)',
+          color: '#DFD0B8',
+          borderRadius: 32,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+          alignItems: 'stretch',
+          padding: 28,
+          opacity: 1,
+          pointerEvents: 'auto' as 'auto',
+          zIndex: 2,
+          boxShadow: '0 2px 16px rgba(0,0,0,0.12)',
+          backdropFilter: 'blur(10px)',
+          transition: 'transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s',
+        }}
+      >
+        {/* Title */}
+        <div
+          style={{
+            fontFamily: 'Bellefair, serif',
+            fontSize: 24,
+            fontWeight: 700,
+            marginBottom: 0,
+            textAlign: 'left',
+            maxWidth: 340,
+            lineHeight: 1.1,
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
+          {video.title_youtube || 'Untitled'}
+        </div>
+      </div>
+    );
+  };
+
+  // Video Card Component
+  const VideoCard = ({ video, cardWidth = 340, cardHeight = 210, disableHover = false }: { video: Video, cardWidth?: number, cardHeight?: number, disableHover?: boolean }) => {
+    const [isHovered, setIsHovered] = useState(false);
+
+    return (
+      <div
+        style={{
+          width: cardWidth,
+          height: cardHeight,
           borderRadius: 32,
           overflow: 'hidden',
           background: '#1A1A1A',
-          boxShadow: showHover ? '0 8px 32px rgba(0,0,0,0.18)' : '0 2px 16px rgba(0,0,0,0.12)',
+          border: '3px solid #848484',
           position: 'relative',
           cursor: 'pointer',
-          border: '2px solid #848484',
-          minHeight: cardHeight,
-          minWidth: cardWidth,
-          maxWidth: cardWidth,
-          maxHeight: cardHeight,
-          width: cardWidth,
-          height: cardHeight,
-          transform: showHover ? 'scale(1.045)' : 'scale(1)',
           transition: 'transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s',
+          transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+          boxShadow: isHovered ? '0 8px 32px rgba(0,0,0,0.18)' : 'none',
         }}
+        onMouseEnter={() => !disableHover && setIsHovered(true)}
+        onMouseLeave={() => !disableHover && setIsHovered(false)}
+        onClick={() => navigate('/home', { state: { videoId: video._id } })}
         tabIndex={0}
         aria-label={video.title_youtube}
-        onClick={() => navigate('/home', { state: { videoId: video._id } })}
-        onKeyDown={e => { if (e.key === 'Enter') navigate('/home', { state: { videoId: video._id } }) }}
-        onMouseEnter={() => { if (!disableHover) setHovered(true); }}
-        onMouseLeave={() => { if (!disableHover) setHovered(false); }}
+        onKeyDown={e => { if (e.key === 'Enter') navigate('/home', { state: { videoId: video._id } }); }}
       >
-        <div style={{ position: 'relative', width: '100%', height: cardHeight }}>
-          <img
-            src={getThumbnail(video)}
-            alt={video.title_youtube}
-            style={{
-              width: '100%',
-              height: cardHeight,
-              objectFit: 'cover',
-              borderTopLeftRadius: 32,
-              borderTopRightRadius: 32,
-              filter: showHover ? 'blur(15px) brightness(0.9)' : 'none',
-              transition: 'filter 0.18s',
-            }}
-          />
-          {showHover && <HoverOverlay video={video} />}
-        </div>
+        <img
+          src={getThumbnail(video)}
+          alt={video.title_youtube || 'Untitled'}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: 32,
+            display: 'block',
+          }}
+        />
+        {!disableHover && isHovered && <HoverOverlay video={video} />}
       </div>
     );
   };

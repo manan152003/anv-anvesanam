@@ -5,6 +5,7 @@ import { getUserLists } from '../services/listService';
 import { getLatestSubmissionByVideoId, getSubmissionsByUser, getVideoById } from '../services/videoService';
 import { getFollowingUsers } from '../services/userService';
 import EditProfileModal from '../components/EditProfileModal';
+import { getYouTubeThumbnail } from '../utils/youtube';
 
 // Critique: Keeping all styles inline for now for consistency with the rest of the app. Consider refactoring to CSS-in-JS or modules for maintainability.
 
@@ -24,6 +25,9 @@ const Profile: React.FC = () => {
   const [favVideos, setFavVideos] = useState<any[]>([]);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  // State for thumbnails
+  const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
 
   // Critique: Fetch all lists, then filter for Favs (isDefault) and Recent Activity (most recent submissions)
   useEffect(() => {
@@ -68,6 +72,7 @@ const Profile: React.FC = () => {
               try {
                 // Handle both string and object videoIds
                 const videoId = typeof submission.videoId === 'object' ? submission.videoId._id : submission.videoId;
+                if (!videoId) return null;
                 const video = await getVideoById(videoId);
                 return { ...video, rating: submission.rating, submissionId: submission._id };
               } catch {
@@ -84,6 +89,20 @@ const Profile: React.FC = () => {
       .finally(() => setLoading(false));
   }, [user]);
 
+  // Load thumbnails for videos
+  useEffect(() => {
+    const loadThumbnails = async () => {
+      const urls: Record<string, string> = {};
+      for (const video of [...favVideos, ...recentActivities]) {
+        if (video && !thumbnailUrls[video._id]) {
+          urls[video._id] = await getThumbnail(video);
+        }
+      }
+      setThumbnailUrls(prev => ({ ...prev, ...urls }));
+    };
+    loadThumbnails();
+  }, [favVideos, recentActivities]);
+
   // Critique: Loading and error states are handled simply for now. Improve with skeletons/spinners for better UX.
   if (loading) return <div style={{ color: '#DFD0B8', fontFamily: 'Lora, serif', fontSize: 32, textAlign: 'center', marginTop: 100 }}>Loading...</div>;
   if (error) return <div style={{ color: '#ff4d4f', fontFamily: 'Lora, serif', fontSize: 24, textAlign: 'center', marginTop: 100 }}>{error}</div>;
@@ -92,11 +111,9 @@ const Profile: React.FC = () => {
   if (!user || !favList || !recentList) return <div style={{ color: '#DFD0B8', fontFamily: 'Lora, serif', fontSize: 24, textAlign: 'center', marginTop: 100 }}>Profile not found</div>;
 
   // Helper to get video thumbnail
-  const getThumbnail = (item: any) => {
-    if (item.videoId && typeof item.videoId === 'object' && item.videoId.thumbnailUrl) {
-      return item.videoId.thumbnailUrl;
-    }
-    return '/logo.png';
+  const getThumbnail = (video: any) => {
+    if (!video) return '/logo.png';
+    return video.thumbnailUrl_youtube || '/logo.png';
   };
 
   // Helper to get video title
@@ -191,7 +208,7 @@ const Profile: React.FC = () => {
               onClick={e => {
                 navigate('/home', { state: { videoId: video._id } });
               }}>
-                <img src={video.thumbnailUrl_youtube || video.thumbnailUrl || '/logo.png'} alt={video.title_youtube || video.title || 'Untitled'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 32 }} />
+                <img src={getThumbnail(video)} alt={video.title_youtube || video.title || 'Untitled'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 32 }} />
               </div>
             ))
           )}
@@ -208,8 +225,7 @@ const Profile: React.FC = () => {
               <div key={video._id || idx} style={{ width: 320, height: 180, borderRadius: 32, overflow: 'hidden', background: '#1A1A1A', border: '3px solid #848484', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer' }} onClick={e => {
                 navigate('/home', { state: { videoId: video._id } });
                 }}>
-                <img src={video.thumbnailUrl_youtube || video.thumbnailUrl || '/logo.png'} alt={video.title_youtube || video.title || 'Untitled'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 32 }} />
-                {/* Optionally show rating or other info here */}
+                <img src={getThumbnail(video)} alt={video.title_youtube || video.title || 'Untitled'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 32 }} />
               </div>
             ))
           )}

@@ -19,7 +19,6 @@ const Previews: React.FC = () => {
   const [category, setCategory] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false)
 
   useEffect(() => {
@@ -71,19 +70,6 @@ const Previews: React.FC = () => {
     fetchVideo()
     // eslint-disable-next-line
   }, [state?.videoId])
-
-  useEffect(() => {
-    if (!video) return;
-    const videoId = video.youtubeVideoId || (video.thumbnailUrl_youtube && video.thumbnailUrl_youtube.split('/')[4]);
-    if (!videoId) return;
-    const maxres = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-    const hq = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-    // Try maxres, fallback to hq if 404
-    fetch(maxres, { method: 'HEAD' }).then(res => {
-      if (res.ok) setThumbnailUrl(maxres);
-      else setThumbnailUrl(hq);
-    }).catch(() => setThumbnailUrl(hq));
-  }, [video]);
 
   if (loading) {
     return <div style={{ color: '#DFD0B8', fontFamily: 'Lora, serif', fontSize: 32, textAlign: 'center', marginTop: 100 }}>Loading...</div>
@@ -180,7 +166,7 @@ const Previews: React.FC = () => {
             </svg>
           </button>
           <img
-            src={thumbnailUrl}
+            src={video.thumbnailUrl_youtube || '/logo.png'}
             alt="Video Thumbnail"
             width={1448}
             height={927}
