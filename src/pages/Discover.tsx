@@ -82,9 +82,9 @@ const Discover: React.FC = () => {
           if (sort === 'newest') {
             vids = vids.sort((a: any, b: any) => new Date(b.uploadDate_youtube).getTime() - new Date(a.uploadDate_youtube).getTime());
           } else if (sort === 'rating_desc') {
-            vids = vids.sort((a: any, b: any) => (b.trendingAvgRating || 0) - (a.trendingAvgRating || 0));
+            vids = vids.sort((a: any, b: any) => (b.avgRating || 0) - (a.avgRating || 0));
           } else if (sort === 'rating_asc') {
-            vids = vids.sort((a: any, b: any) => (a.trendingAvgRating || 0) - (b.trendingAvgRating || 0));
+            vids = vids.sort((a: any, b: any) => (a.avgRating || 0) - (b.avgRating || 0));
           }
           setVideos(vids);
         })
@@ -260,7 +260,7 @@ const Discover: React.FC = () => {
   };
 
   // Video Card
-  const VideoCard = ({ video, cardWidth = 340, cardHeight = 210, disableHover = false }: { video: Video, cardWidth?: number, cardHeight?: number, disableHover?: boolean }) => {
+  const VideoCard = ({ video, cardWidth = 480, cardHeight = 270, disableHover = false }: { video: Video, cardWidth?: number, cardHeight?: number, disableHover?: boolean }) => {
     const [isHovered, setIsHovered] = useState(false);
     const hasDescription = Boolean(video.bestDescription);
 
@@ -317,9 +317,9 @@ const Discover: React.FC = () => {
       if (sort === 'newest') {
         filtered = filtered.sort((a: any, b: any) => new Date(b.uploadDate_youtube).getTime() - new Date(a.uploadDate_youtube).getTime());
       } else if (sort === 'rating_desc') {
-        filtered = filtered.sort((a: any, b: any) => (b.trendingAvgRating || 0) - (a.trendingAvgRating || 0));
+        filtered = filtered.sort((a: any, b: any) => (b.avgRating || 0) - (a.avgRating || 0));
       } else if (sort === 'rating_asc') {
-        filtered = filtered.sort((a: any, b: any) => (a.trendingAvgRating || 0) - (b.trendingAvgRating || 0));
+        filtered = filtered.sort((a: any, b: any) => (a.avgRating || 0) - (b.avgRating || 0));
       }
       setVideos([...filtered]);
     }
@@ -552,7 +552,7 @@ const Discover: React.FC = () => {
 
   // Sort Dropdown Component
   const SortDropdown = () => (
-    <div ref={sortRef} style={{ position: 'relative' }}>
+    <div ref={sortRef} style={{ position: 'relative', zIndex: 110 }}>
       <div 
         style={{
           fontSize: '18px',
@@ -575,7 +575,8 @@ const Discover: React.FC = () => {
           boxShadow: sortOpen 
             ? '0 8px 25px rgba(0, 0, 0, 0.3)' 
             : '0 4px 15px rgba(0, 0, 0, 0.2)',
-          transform: sortOpen ? 'translateY(-2px)' : 'translateY(0)'
+          transform: sortOpen ? 'translateY(-2px)' : 'translateY(0)',
+          zIndex: 120
         }} 
         onClick={() => setSortOpen(s => !s)}
         onMouseEnter={e => {
@@ -613,7 +614,7 @@ const Discover: React.FC = () => {
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(223, 208, 184, 0.2)',
           borderRadius: '20px',
-          zIndex: 20,
+          zIndex: 130,
           padding: '12px',
           minWidth: '320px',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
@@ -641,7 +642,8 @@ const Discover: React.FC = () => {
                 fontSize: '16px',
                 letterSpacing: '0.3px',
                 position: 'relative',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                zIndex: 140
               }}
               onClick={() => { 
                 setSort(opt.value); 
@@ -895,7 +897,7 @@ const Discover: React.FC = () => {
           marginTop: '32px',
           marginLeft: '40px',
           position: 'relative',
-          zIndex: 1
+          zIndex: 105
         }}>
           <SortDropdown />
         </div>

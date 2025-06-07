@@ -14,14 +14,12 @@ interface LocationState {
 const Previews: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const state = location.state as LocationState
-  const { user } = useAuth()
-
   const [video, setVideo] = useState<any>(null)
-  const [username, setUsername] = useState<string>('')
-  const [category, setCategory] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [year, setYear] = useState('')
+  const [username, setUsername] = useState<string>('')
+  const [category, setCategory] = useState<string>('')
   const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
@@ -32,8 +30,8 @@ const Previews: React.FC = () => {
       setError('')
       try {
         let data
-        if (state?.videoId) {
-          data = await getVideoById(state.videoId)
+        if (location.state?.videoId) {
+          data = await getVideoById(location.state.videoId)
         } else {
           // Fetch all videos and pick a random one
           const res = await fetch(`${import.meta.env.VITE_API_URL}/videos`)
@@ -66,6 +64,9 @@ const Previews: React.FC = () => {
           setCategory('')
           setUsername('@unknown')
         }
+        if (data.uploadDate_youtube) {
+          setYear(new Date(data.uploadDate_youtube).getFullYear().toString());
+        }
       } catch (err: any) {
         setError(err.message || 'Failed to load video')
       } finally {
@@ -74,7 +75,7 @@ const Previews: React.FC = () => {
     }
     fetchVideo()
     // eslint-disable-next-line
-  }, [state?.videoId])
+  }, [location.state?.videoId, navigate])
 
   useEffect(() => {
     const loadThumbnail = async () => {
@@ -181,9 +182,6 @@ const Previews: React.FC = () => {
       </div>
     )
   }
-
-  // Get year from uploadDate_youtube
-  const year = video.uploadDate_youtube ? new Date(video.uploadDate_youtube).getFullYear() : '2025'
 
   return (
     <div style={{ 
@@ -336,9 +334,16 @@ const Previews: React.FC = () => {
                 objectFit: 'cover',
                 transition: 'all 0.6s ease',
                 transform: imageLoaded ? 'scale(1)' : 'scale(1.1)',
-                filter: imageLoaded ? 'brightness(1)' : 'brightness(0.8)'
+                filter: imageLoaded ? 'brightness(1)' : 'brightness(0.8)',
+                cursor: 'pointer',
               }}
               onLoad={() => setImageLoaded(true)}
+              onClick={() => {
+                if (video.youtubeVideoId) {
+                  window.open(`https://www.youtube.com/watch?v=${video.youtubeVideoId}`, '_blank');
+                }
+              }}
+              title="Open on YouTube"
             />
 
             {/* Enhanced Gradient Overlay */}
@@ -367,7 +372,7 @@ const Previews: React.FC = () => {
               <div style={{
                 display: 'inline-block',
                 background: 'rgba(223, 208, 184, 0.15)',
-                backdropFilter: 'blur(10px)',
+                backdropFilter: 'blur(5px)',
                 color: '#DFD0B8',
                 padding: '8px 20px',
                 borderRadius: '25px',
@@ -426,12 +431,14 @@ const Previews: React.FC = () => {
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px'
+                  gap: '2px'
                 }}>
+                  <span>{video?.avgRating ? video.avgRating.toFixed(1) : '0.0'}</span>
                   <div style={{
+                    paddingBottom: '1px',
                     width: '20px',
                     height: '20px',
-                    background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                    // background: 'linear-gradient(5deg,rgb(0, 0, 0), #FFA500)',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
@@ -440,7 +447,6 @@ const Previews: React.FC = () => {
                   }}>
                     ★
                   </div>
-                  <span>4.8</span>
                 </div>
               </div>
 
@@ -448,7 +454,7 @@ const Previews: React.FC = () => {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                gap: '6px',
                 fontSize: '16px',
                 color: 'rgba(223, 208, 184, 0.7)'
               }}>
@@ -458,7 +464,7 @@ const Previews: React.FC = () => {
                     fontWeight: 700,
                     color: '#DFD0B8',
                     cursor: 'pointer',
-                    padding: '6px 16px',
+                    padding: '5px 14px',
                     background: 'rgba(223, 208, 184, 0.1)',
                     borderRadius: '20px',
                     transition: 'all 0.3s ease',
