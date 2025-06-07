@@ -12,6 +12,8 @@ const Signup = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [bio, setBio] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=' + Math.random());
   const [error, setError] = useState('');
   const { signup } = useAuth();
   const navigate = useNavigate();
@@ -23,7 +25,7 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await signup(email, password, name, username);
+      await signup(email, password, name, username, avatarUrl, bio);
       // Redirect to login page with the original destination and URL
       navigate('/login', { state: { from, url }, replace: true });
     } catch (err: any) {
@@ -96,9 +98,24 @@ const Signup = () => {
                 name="password"
                 type="password"
                 required
+                minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 bg-[#2A2A2A] border border-[#3A3A3A] rounded-md text-[#DFD0B8] focus:outline-none focus:ring-2 focus:ring-[#DFD0B8]"
+              />
+            </div>
+            <div>
+              <label htmlFor="bio" className="text-[#DFD0B8]">
+                Bio (Optional)
+              </label>
+              <textarea
+                id="bio"
+                name="bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 bg-[#2A2A2A] border border-[#3A3A3A] rounded-md text-[#DFD0B8] focus:outline-none focus:ring-2 focus:ring-[#DFD0B8]"
+                rows={3}
+                placeholder="Tell us about yourself"
               />
             </div>
           </div>

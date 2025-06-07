@@ -23,7 +23,7 @@ const EnterDetails: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
-  const DESCRIPTION_LIMIT = 200;
+  const DESCRIPTION_LIMIT = 200
   const [durationSeconds, setDurationSeconds] = useState<number | null>(null)
   const [uploadDate, setUploadDate] = useState<string>('')
 
@@ -117,13 +117,13 @@ const EnterDetails: React.FC = () => {
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      setError('Please select a star rating.');
-      return;
+      setError('Please select a star rating.')
+      return
     }
-    setError('');
-    setIsSubmitting(true);
+    setError('')
+    setIsSubmitting(true)
     try {
-      if (!user) throw new Error('User not found');
+      if (!user) throw new Error('User not found')
       const submission = {
         url,
         title,
@@ -133,22 +133,22 @@ const EnterDetails: React.FC = () => {
         userId: user.id,
         duration_seconds: durationSeconds,
         uploadDate_youtube: uploadDate,
-      };
-      console.log('Submitting video:', submission);
-      const videoId = await submitVideo(submission);
+      }
+      console.log('Submitting video:', submission)
+      const videoId = await submitVideo(submission)
       // Show success message
-      setSuccessMessage('Your video is added.');
+      setSuccessMessage('Your video is added.')
       setTimeout(() => {
         navigate('/home', {
           state: {
             videoId
           }
-        });
-      }, 250);
+        })
+      }, 250)
     } catch (error) {
-      console.error('Error submitting video:', error);
-      setError(error instanceof Error ? error.message : 'Failed to submit video');
-      setIsSubmitting(false);
+      console.error('Error submitting video:', error)
+      setError(error instanceof Error ? error.message : 'Failed to submit video')
+      setIsSubmitting(false)
     }
   }
 
@@ -259,7 +259,7 @@ const EnterDetails: React.FC = () => {
               pointerEvents: 'none',
             }}>
               <svg width="101" height="102" viewBox="0 0 101 102" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21.0417 13.125L79.9583 51L21.0417 88.875V13.125Z" stroke="#1A1A1A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M21.0417 13.125L79.9583 51L21.0417 88.875V13.125Z" stroke="#1A1A1A" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
           </div>

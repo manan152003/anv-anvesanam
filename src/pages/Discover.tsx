@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCategories, getCategoryById } from '../services/categoryService';
 import { getLatestSubmissionByVideoId } from '../services/videoService';
+import AddToListModal from '../components/AddToListModal';
+import { useAuth } from '../context/AuthContext';
+import { useSwipeable } from 'react-swipeable';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -54,9 +57,11 @@ const Discover: React.FC = () => {
   const [error, setError] = useState('');
   const [friendsFeed, setFriendsFeed] = useState<FriendFeed[]>([]);
   const navigate = useNavigate();
-  // TODO: Replace with real userId from auth context
-  const userId = 'CURRENT_USER_ID';
+  const { user, isAuthenticated } = useAuth();
   const [categoryMap, setCategoryMap] = useState<{ [videoId: string]: string }>({});
+  const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false);
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [sundayStack, setSundayStack] = useState<Video[]>([]);
 
   useEffect(() => {
     getCategories().then(setCategories).catch(() => setCategories([]));
@@ -84,7 +89,12 @@ const Discover: React.FC = () => {
         .catch(() => setError('Failed to load videos'))
         .finally(() => setLoading(false));
     } else if (tab === 'friends') {
-      fetch(`${API_URL}/submissions/friends-feed?userId=${userId}`)
+      if (!isAuthenticated || !user?.id) {
+        setFriendsFeed([]);
+        setLoading(false);
+        return;
+      }
+      fetch(`${API_URL}/submissions/friends-feed?userId=${user.id}`)
         .then(res => res.json())
         .then(setFriendsFeed)
         .catch(() => setError('Failed to load friends feed'))
@@ -125,7 +135,7 @@ const Discover: React.FC = () => {
   // Helper to get video thumbnail
   const getThumbnail = (video: Video) => {
     const id = video.youtubeVideoId || (video.thumbnailUrl_youtube && video.thumbnailUrl_youtube.split('/')[4]);
-    return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '/logo.png';
+    return id ? `https://img.youtube.com/vi/${id}/maxresdefault.jpg` : '/logo.png';
   };
 
   // Helper to get category name from latest submission
@@ -151,7 +161,7 @@ const Discover: React.FC = () => {
       return (
         <div
           style={{
-            position: 'absolute',
+            position: 'absolute' as 'absolute',
             inset: 0,
             background: 'rgba(20,20,20,0.55)',
             color: '#DFD0B8',
@@ -162,7 +172,7 @@ const Discover: React.FC = () => {
             alignItems: 'stretch',
             padding: 28,
             opacity: 1,
-            pointerEvents: 'auto',
+            pointerEvents: 'auto' as 'auto',
             zIndex: 2,
             boxShadow: '0 2px 16px rgba(0,0,0,0.12)',
             backdropFilter: 'blur(10px)',
@@ -238,7 +248,8 @@ const Discover: React.FC = () => {
                 style={{ background: '#210f37', color: '#DFD0B8',  borderRadius: 16, padding: '4px 12px', fontSize: 15, fontWeight: 700, cursor: 'pointer', border: '1px solid #AFB774' }}
                 onClick={e => {
                   e.stopPropagation();
-                  alert('Add to lists coming soon!');
+                  setSelectedVideoId(video._id);
+                  setIsAddToListModalOpen(true);
                 }}
               >add to lists</button>
             </div>
@@ -250,7 +261,7 @@ const Discover: React.FC = () => {
       return (
         <div
           style={{
-            position: 'absolute',
+            position: 'absolute' as 'absolute',
             inset: 0,
             background: 'rgba(20,20,20,0.55)',
             color: '#DFD0B8',
@@ -261,7 +272,7 @@ const Discover: React.FC = () => {
             alignItems: 'center',
             padding: 28,
             opacity: 1,
-            pointerEvents: 'auto',
+            pointerEvents: 'auto' as 'auto',
             zIndex: 2,
             boxShadow: '0 2px 16px rgba(0,0,0,0.12)',
             backdropFilter: 'blur(10px)',
@@ -311,7 +322,8 @@ const Discover: React.FC = () => {
               style={{ background: '#210f37', color: '#DFD0B8', borderRadius: 16, padding: '8px 24px', fontSize: 15, fontWeight: 700, cursor: 'pointer', border: '1px solid #AFB774' }}
               onClick={e => {
                 e.stopPropagation();
-                alert('Add to lists coming soon!');
+                setSelectedVideoId(video._id);
+                setIsAddToListModalOpen(true);
               }}
             >add to lists</button>
           </div>
@@ -321,44 +333,50 @@ const Discover: React.FC = () => {
   };
 
   // Video Card
-  const VideoCard = ({ video }: { video: Video }) => {
+  const VideoCard = ({ video, cardWidth = 340, cardHeight = 210, disableHover = false }: { video: Video, cardWidth?: number, cardHeight?: number, disableHover?: boolean }) => {
     const [hovered, setHovered] = useState(false);
+    const showHover = !disableHover && hovered;
     return (
       <div
         style={{
           borderRadius: 32,
           overflow: 'hidden',
           background: '#1A1A1A',
-          boxShadow: hovered ? '0 8px 32px rgba(0,0,0,0.18)' : '0 2px 16px rgba(0,0,0,0.12)',
+          boxShadow: showHover ? '0 8px 32px rgba(0,0,0,0.18)' : '0 2px 16px rgba(0,0,0,0.12)',
           position: 'relative',
           cursor: 'pointer',
           border: '2px solid #848484',
-          minHeight: 210,
-          transform: hovered ? 'scale(1.045)' : 'scale(1)',
+          minHeight: cardHeight,
+          minWidth: cardWidth,
+          maxWidth: cardWidth,
+          maxHeight: cardHeight,
+          width: cardWidth,
+          height: cardHeight,
+          transform: showHover ? 'scale(1.045)' : 'scale(1)',
           transition: 'transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s',
         }}
         tabIndex={0}
         aria-label={video.title_youtube}
         onClick={() => navigate('/home', { state: { videoId: video._id } })}
         onKeyDown={e => { if (e.key === 'Enter') navigate('/home', { state: { videoId: video._id } }) }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseEnter={() => { if (!disableHover) setHovered(true); }}
+        onMouseLeave={() => { if (!disableHover) setHovered(false); }}
       >
-        <div style={{ position: 'relative', width: '100%', height: 210 }}>
+        <div style={{ position: 'relative', width: '100%', height: cardHeight }}>
           <img
             src={getThumbnail(video)}
             alt={video.title_youtube}
             style={{
               width: '100%',
-              height: 210,
+              height: cardHeight,
               objectFit: 'cover',
               borderTopLeftRadius: 32,
               borderTopRightRadius: 32,
-              filter: hovered ? 'blur(15px) brightness(0.9)' : 'none',
+              filter: showHover ? 'blur(15px) brightness(0.9)' : 'none',
               transition: 'filter 0.18s',
             }}
           />
-          {hovered && <HoverOverlay video={video} />}
+          {showHover && <HoverOverlay video={video} />}
         </div>
       </div>
     );
@@ -388,7 +406,7 @@ const Discover: React.FC = () => {
     // eslint-disable-next-line
   }, [selectedCategory, sort]);
 
-  // Friends Feed Layout
+  // Friends Feed Layout (Refactored & Critiqued)
   const FriendsFeed = () => (
     <div style={{ margin: '48px 48px 0 48px' }}>
       {friendsFeed.length === 0 ? (
@@ -396,15 +414,209 @@ const Discover: React.FC = () => {
       ) : (
         friendsFeed.map(feed => (
           <div key={feed.friend.id} style={{ marginBottom: 48 }}>
-            <div style={{ color: '#A0A0A0', fontSize: 18, marginBottom: 12 }}>@{feed.friend.username} recently added</div>
+            <div style={{ color: '#A0A0A0', fontSize: 18, marginBottom: 4 }}>
+              @{feed.friend.username} <span style={{ fontWeight: 400, fontSize: 16 }}>recently added</span>
+            </div>
+            {/* Critique: Add a horizontal line for separation */}
+            <div style={{ borderBottom: '1px solid #444', margin: '8px 0 20px 0', width: '100%' }} />
             <div style={{ display: 'flex', gap: 32 }}>
-              {feed.recentVideos.map(video => <VideoCard key={video._id} video={video} />)}
+              {feed.recentVideos.map(video => (
+                <div key={video._id} style={{ width: 320, height: 180, display: 'flex', alignItems: 'center' }}>
+                  <VideoCard video={video} cardWidth={320} cardHeight={180} />
+                </div>
+              ))}
             </div>
           </div>
         ))
       )}
     </div>
   );
+
+  // Sunday Picks Layout (Stacked Swipeable Cards)
+  useEffect(() => {
+    if (tab === 'sunday' && Array.isArray(videos)) {
+      setSundayStack(videos);
+    }
+  }, [tab, videos]);
+
+  const handleSwipe = (dir: 'left' | 'right') => {
+    if (!sundayStack.length) return;
+    const topVideo = sundayStack[0];
+    if (dir === 'right') {
+      navigate('/home', { state: { videoId: topVideo._id } });
+    } else if (dir === 'left') {
+      setSundayStack(prev => prev.slice(1));
+    }
+  };
+
+  const SundayPicks = () => {
+    if (!Array.isArray(sundayStack)) {
+      return <div style={{ textAlign: 'center', color: '#ff4d4f', fontSize: 24 }}>Failed to load Sunday Picks</div>;
+    }
+    // Only show top two cards for the stack effect
+    const visibleCards = sundayStack.slice(0, 2);
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh', position: 'relative' }}>
+        <div style={{ fontSize: 24, fontFamily: 'Lora, serif', marginBottom: 32, color: '#DFD0B8', opacity: 0.9 }}>
+          specially curated just for you.
+        </div>
+        <div style={{ position: 'relative', width: 520, height: 340, marginBottom: 32 }}>
+          {visibleCards.map((video, idx) => {
+            const isTop = idx === 0;
+            // Top card: normal, swipeable
+            // Second card: offset, scaled, faded, not swipeable
+            const style: React.CSSProperties = isTop
+              ? {
+                  position: 'absolute' as 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 520,
+                  height: 340,
+                  zIndex: 2,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+                  cursor: 'pointer',
+                  opacity: 1,
+                  transition: 'all 0.2s cubic-bezier(.4,2,.6,1)',
+                  touchAction: 'pan-y',
+                  userSelect: 'auto' as 'auto',
+                  pointerEvents: 'auto' as 'auto',
+                }
+              : {
+                  position: 'absolute' as 'absolute',
+                  left: 0,
+                  top: 30,
+                  width: 520,
+                  height: 340,
+                  zIndex: 1,
+                  boxShadow: '0 2px 16px rgba(0,0,0,0.12)',
+                  cursor: 'default',
+                  opacity: 0.7,
+                  transform: 'scale(0.96)',
+                  transition: 'all 0.2s cubic-bezier(.4,2,.6,1)',
+                  touchAction: 'none',
+                  userSelect: 'none' as 'none',
+                  pointerEvents: 'none' as 'none',
+                };
+            const handlers = isTop
+              ? useSwipeable({
+                  onSwipedLeft: () => handleSwipe('left'),
+                  onSwipedRight: () => handleSwipe('right'),
+                  trackMouse: true,
+                })
+              : {};
+            return (
+              <div
+                key={video._id}
+                {...handlers}
+                style={style}
+                onClick={isTop ? () => navigate('/home', { state: { videoId: video._id } }) : undefined}
+              >
+                <VideoCard video={video} cardWidth={520} cardHeight={340} disableHover={true} />
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ fontSize: 22, fontFamily: 'Lora, serif', color: '#DFD0B8', opacity: 0.7, marginTop: 24 }}>
+          swipe right to watch, left to discard
+        </div>
+      </div>
+    );
+  };
+
+  // Trending This Week Layout
+  const TrendingThisWeek = () => {
+    const [currentIdx, setCurrentIdx] = useState(0);
+    const trendingVideos = videos.slice(0, 8); // up to 8 for stack cycling
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Rotate every 5 seconds
+    useEffect(() => {
+      if (tab !== 'trending' || trendingVideos.length < 2) return;
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = setInterval(() => {
+        setCurrentIdx(prev => (prev + 1) % trendingVideos.length);
+      }, 5000);
+      return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    }, [tab, trendingVideos.length]);
+
+    if (trendingVideos.length === 0) {
+      return <div style={{ textAlign: 'center', color: '#ff4d4f', fontSize: 24 }}>No trending videos</div>;
+    }
+
+    // Calculate stack: next 4 videos after currentIdx, wrapping around
+    const stack = [];
+    for (let i = 0; i < Math.min(5, trendingVideos.length); i++) {
+      stack.push(trendingVideos[(currentIdx + i) % trendingVideos.length]);
+    }
+    // The front card (bottom of stack) index
+    const frontIdx = (currentIdx + stack.length - 1) % trendingVideos.length;
+    // Remove the front card from the stack for display
+    const stackWithoutFront = stack.filter((video, idx) => ((currentIdx + idx) % trendingVideos.length) !== frontIdx);
+
+    // Minimal stack card (no border, no shadow, no title)
+    const StackCard = ({ video, onClick }: { video: Video, onClick: () => void }) => (
+      <div
+        style={{
+          width: 241,
+          height: 141,
+          borderRadius: 45,
+          overflow: 'hidden',
+          cursor: 'pointer',
+          margin: 0,
+          boxShadow: 'none',
+          border: 'none',
+          background: '#1A1A1A',
+        }}
+        tabIndex={0}
+        aria-label={video.title_youtube}
+        onClick={onClick}
+        onKeyDown={e => { if (e.key === 'Enter') onClick(); }}
+      >
+        <img
+          src={getThumbnail(video)}
+          alt={video.title_youtube}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: 45,
+            display: 'block',
+          }}
+        />
+      </div>
+    );
+
+    // Critique: Main card is 1350x759, stack is 4 cards, 241x141, 19px gap, top-right overlay, no border/shadow/title.
+    return (
+      <div style={{marginTop: 10, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', position: 'relative'}}>
+        {/* Big window with overlay stack */}
+        <div style={{ width: 1350, height: 759, borderRadius: 36, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', background: '#1A1A1A', position: 'relative' }}>
+          <VideoCard video={trendingVideos[frontIdx]} cardWidth={1350} cardHeight={759} disableHover={true} />
+          {/* Overlay stack in top right, overlapping vertically with only bottom visible */}
+          <div style={{ position: 'absolute', top: 212, right: 19, width: 241, height: 141 + (stackWithoutFront.length - 1) * 50, zIndex: 10, pointerEvents: 'auto' }}>
+            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+              {stackWithoutFront.map((video, idx) => (
+                <div
+                  key={video._id}
+                  style={{
+                    position: 'absolute',
+                    top: idx * 50, // Overlap so only bottom 50px is visible
+                    left: 0,
+                    width: 241,
+                    height: 141,
+                    zIndex: idx + 1, // Last card is on top
+                    pointerEvents: 'auto',
+                  }}
+                >
+                  <StackCard video={video} onClick={() => setCurrentIdx((currentIdx + idx) % trendingVideos.length)} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // Main Render
   return (
@@ -451,6 +663,10 @@ const Discover: React.FC = () => {
         <div style={{ textAlign: 'center', fontSize: 24, color: '#ff4d4f', marginTop: 100 }}>{error}</div>
       ) : tab === 'friends' ? (
         <FriendsFeed />
+      ) : tab === 'sunday' ? (
+        <SundayPicks />
+      ) : tab === 'trending' ? (
+        <TrendingThisWeek />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 48, margin: '48px 48px 0 48px' }}>
           {videos.length === 0 ? (
@@ -461,6 +677,15 @@ const Discover: React.FC = () => {
             ))
           )}
         </div>
+      )}
+
+      {/* Add to List Modal */}
+      {selectedVideoId && (
+        <AddToListModal
+          isOpen={isAddToListModalOpen}
+          onClose={() => setIsAddToListModalOpen(false)}
+          videoId={selectedVideoId}
+        />
       )}
     </div>
   );
