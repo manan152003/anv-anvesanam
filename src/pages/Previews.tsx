@@ -24,6 +24,7 @@ const Previews: React.FC = () => {
   const [error, setError] = useState('')
   const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -98,19 +99,126 @@ const Previews: React.FC = () => {
   };
 
   if (loading) {
-    return <div style={{ color: '#DFD0B8', fontFamily: 'Lora, serif', fontSize: 32, textAlign: 'center', marginTop: 100 }}>Loading...</div>
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: 'linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #141414 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '20px'
+        }}>
+          <div style={{
+            width: '60px',
+            height: '60px',
+            border: '3px solid #DFD0B8',
+            borderTop: '3px solid transparent',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <div style={{ 
+            color: '#DFD0B8', 
+            fontFamily: 'Lora, serif', 
+            fontSize: '24px',
+            fontWeight: 300,
+            letterSpacing: '0.5px'
+          }}>
+            Loading experience...
+          </div>
+        </div>
+      </div>
+    )
   }
+
   if (error || !video) {
-    return <div style={{ color: '#ff4d4f', fontFamily: 'Lora, serif', fontSize: 24, textAlign: 'center', marginTop: 100 }}>{error || 'Video not found'}</div>
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: 'linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #141414 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          padding: '40px',
+          background: 'rgba(223, 208, 184, 0.05)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '20px',
+          border: '1px solid rgba(223, 208, 184, 0.1)'
+        }}>
+          <div style={{ 
+            color: '#ff6b6b', 
+            fontFamily: 'Lora, serif', 
+            fontSize: '24px',
+            marginBottom: '10px'
+          }}>
+            {error || 'Video not found'}
+          </div>
+          <button
+            onClick={() => navigate('/')}
+            style={{
+              background: 'linear-gradient(135deg, #DFD0B8 0%, #C9B896 100%)',
+              color: '#141414',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '25px',
+              fontFamily: 'Lora, serif',
+              fontSize: '16px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Return Home
+          </button>
+        </div>
+      </div>
+    )
   }
 
   // Get year from uploadDate_youtube
   const year = video.uploadDate_youtube ? new Date(video.uploadDate_youtube).getFullYear() : '2025'
 
   return (
-    <div style={{ minHeight: '100vh', background: '#141414', color: '#DFD0B8', fontFamily: 'Lora, serif' }}>
+    <div style={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #141414 100%)',
+      color: '#DFD0B8', 
+      fontFamily: 'Lora, serif',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Animated background elements */}
+      <div style={{
+        position: 'fixed',
+        top: '10%',
+        right: '10%',
+        width: '300px',
+        height: '300px',
+        background: 'radial-gradient(circle, rgba(223, 208, 184, 0.03) 0%, transparent 70%)',
+        borderRadius: '50%',
+        animation: 'float 6s ease-in-out infinite',
+        zIndex: 0
+      }} />
+      <div style={{
+        position: 'fixed',
+        bottom: '20%',
+        left: '5%',
+        width: '200px',
+        height: '200px',
+        background: 'radial-gradient(circle, rgba(223, 208, 184, 0.02) 0%, transparent 70%)',
+        borderRadius: '50%',
+        animation: 'float 8s ease-in-out infinite reverse',
+        zIndex: 0
+      }} />
+
       {/* Header */}
-      {/* Logo */}
       <img
         src="/logo.png"
         alt="Anv Logo"
@@ -132,8 +240,9 @@ const Previews: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         height: '97px',
+        position: 'relative',
+        zIndex: 5
       }}>
-        {/* Nav */}
         <div style={{
           display: 'flex',
           gap: '15px',
@@ -149,139 +258,228 @@ const Previews: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Preview Content */}
+      {/* Main Content Container */}
       <div style={{
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         justifyContent: 'center',
         minHeight: 'calc(100vh - 97px)',
-        padding: '0 0 0 0',
+        padding: '40px 20px',
         position: 'relative',
+        zIndex: 1
       }}>
-        {/* Video Thumbnail with Overlayed Text */}
+        {/* Enhanced Video Card */}
         <div style={{
           position: 'relative',
-          width: '1448px',
-          height: '927px',
-          maxWidth: '100%',
+          width: '100%',
+          maxWidth: '1400px',
+          background: 'rgba(20, 20, 20, 0.8)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          overflow: 'hidden',
+          boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
+          transition: 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          animation: 'slideUp 0.8s ease-out'
         }}>
-          {/* Add to List Button */}
-          <button
-            aria-label="Add to list"
-            style={{
-              position: 'absolute',
-              top: '40px',
-              right: '40px',
-              borderRadius: '55px',
-              width: '75px',
-              height: '56px',
-              background: '#fff',
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-              cursor: 'pointer',
-              zIndex: 3,
-            }}
-            onClick={() => setIsAddToListModalOpen(true)}
-          >
-            <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M15 6.25V23.75M6.25 15H23.75" stroke="#1A1A1A" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-          <img
-            src={getThumbnail(video)}
-            alt="Video Thumbnail"
-            width={1448}
-            height={927}
-            style={{
-              width: '1448px',
-              height: '927px',
-              borderRadius: '05px',
-              objectFit: 'cover',
-              maxWidth: '100%',
-              display: 'block',
-            }}
-          />
-          {/* Black gradient for text readability */}
+          {/* Video Image Container */}
           <div style={{
-            position: 'absolute',
-            left: 0,
-            bottom: 0,
+            position: 'relative',
             width: '100%',
-            height: '320px',
-            background: 'linear-gradient(180deg, rgba(20,20,20,0) 0%, rgba(10,10,10,0.5) 50%, rgba(10,10,10,0.98) 100%)',
-            borderRadius: '0 0 8px 8px',
-            zIndex: 2,
-            pointerEvents: 'none',
-          }} />
-          {/* Overlayed Text */}
+            aspectRatio: '16/9',
+            overflow: 'hidden'
+          }}>
+            {/* Floating Action Button */}
+            <button
+              aria-label="Add to list"
+              style={{
+                position: 'absolute',
+                top: '30px',
+                right: '30px',
+                borderRadius: '50%',
+                width: '70px',
+                height: '70px',
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+                cursor: 'pointer',
+                zIndex: 4,
+                transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                transform: 'scale(0.9)',
+                opacity: imageLoaded ? 1 : 0
+              }}
+              onClick={() => setIsAddToListModalOpen(true)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)'
+                e.currentTarget.style.boxShadow = '0 15px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(0.9)'
+                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              <svg width="32" height="32" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 6.25V23.75M6.25 15H23.75" stroke="#1A1A1A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            {/* Main Video Image */}
+            <img
+              src={getThumbnail(video)}
+              alt="Video Thumbnail"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                transition: 'all 0.6s ease',
+                transform: imageLoaded ? 'scale(1)' : 'scale(1.1)',
+                filter: imageLoaded ? 'brightness(1)' : 'brightness(0.8)'
+              }}
+              onLoad={() => setImageLoaded(true)}
+            />
+
+            {/* Enhanced Gradient Overlay */}
+            <div style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '60%',
+              background: 'linear-gradient(180deg, rgba(20,20,20,0) 0%, rgba(20,20,20,0.3) 30%, rgba(10,10,10,0.8) 80%, rgba(10,10,10,0.95) 100%)',
+              zIndex: 2
+            }} />
+          </div>
+
+          {/* Content Section */}
           <div style={{
             position: 'absolute',
-            left: '60px',
-            bottom: '40px',
-            color: '#DFD0B8',
-            zIndex: 3,
-            width: '1330px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-end',
-            height: '240px',
-            textShadow: '0 2px 8px rgba(0,0,0,0.7)',
-            overflow: 'hidden',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: '60px 50px 40px',
+            zIndex: 3
           }}>
-            <div style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-end',
-              overflow: 'hidden',
-            }}>
-              <h1 style={{
-                fontFamily: 'Bellefair, serif',
-                fontSize: '75px',
-                fontWeight: 400,
-                margin: 0,
-                wordBreak: 'break-word',
-                whiteSpace: 'normal',
-                lineHeight: 1.1,
-                maxHeight: '200px',
-                overflow: 'hidden',
+            {/* Category Badge */}
+            {category && (
+              <div style={{
+                display: 'inline-block',
+                background: 'rgba(223, 208, 184, 0.15)',
+                backdropFilter: 'blur(10px)',
+                color: '#DFD0B8',
+                padding: '8px 20px',
+                borderRadius: '25px',
+                fontSize: '14px',
+                fontWeight: 600,
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+                marginBottom: '20px',
+                border: '1px solid rgba(223, 208, 184, 0.2)',
+                animation: 'fadeInUp 0.8s ease-out 0.3s both'
               }}>
-                {video.title_youtube || video.title}
-              </h1>
+                {category}
+              </div>
+            )}
+
+            {/* Title */}
+            <h1 style={{
+              fontFamily: 'Bellefair, serif',
+              fontSize: 'clamp(32px, 5vw, 72px)',
+              fontWeight: 400,
+              margin: '0 0 20px 0',
+              color: '#DFD0B8',
+              lineHeight: 1.1,
+              textShadow: '0 4px 20px rgba(0, 0, 0, 0.8)',
+              animation: 'fadeInUp 0.8s ease-out 0.1s both'
+            }}>
+              {video.title_youtube || video.title}
+            </h1>
+
+            {/* Metadata Row */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '20px',
+              animation: 'fadeInUp 0.8s ease-out 0.5s both'
+            }}>
+              {/* Left metadata */}
               <div style={{
                 display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                fontFamily: 'Lora, serif',
-                fontWeight: 400,
-                fontSize: '20px',
-                marginTop: '5px',
-                width: '100%',
+                alignItems: 'center',
                 gap: '20px',
+                fontSize: '18px',
+                color: 'rgba(223, 208, 184, 0.8)',
+                fontWeight: 400
               }}>
-                <div style={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  maxWidth: '60%',
-                }}>{year} • {category} • 4.8</div>
-                <div style={{
-                  textAlign: 'right',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  maxWidth: '40%',
+                <span style={{
+                  padding: '6px 16px',
+                  background: 'rgba(223, 208, 184, 0.1)',
+                  borderRadius: '20px',
+                  backdropFilter: 'blur(5px)'
                 }}>
-                  submitted via <span style={{ fontWeight: 700, cursor: 'pointer' }} onClick={() => {
+                  {year}
+                </span>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px'
+                  }}>
+                    ★
+                  </div>
+                  <span>4.8</span>
+                </div>
+              </div>
+
+              {/* Submitter info */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                fontSize: '16px',
+                color: 'rgba(223, 208, 184, 0.7)'
+              }}>
+                <span>submitted by</span>
+                <span 
+                  style={{ 
+                    fontWeight: 700,
+                    color: '#DFD0B8',
+                    cursor: 'pointer',
+                    padding: '6px 16px',
+                    background: 'rgba(223, 208, 184, 0.1)',
+                    borderRadius: '20px',
+                    transition: 'all 0.3s ease',
+                    backdropFilter: 'blur(5px)'
+                  }}
+                  onClick={() => {
                     if (username && username.startsWith('@')) {
                       navigate(`/profile/${username.slice(1)}`);
                     }
-                  }}>{username}</span>
-                </div>
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(223, 208, 184, 0.2)'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(223, 208, 184, 0.1)'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}
+                >
+                  {username}
+                </span>
               </div>
             </div>
           </div>
@@ -296,8 +494,44 @@ const Previews: React.FC = () => {
           videoId={video._id}
         />
       )}
+
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+          }
+          
+          @keyframes slideUp {
+            0% {
+              opacity: 0;
+              transform: translateY(60px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          @keyframes fadeInUp {
+            0% {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}
+      </style>
     </div>
   )
 }
 
-export default Previews 
+export default Previews

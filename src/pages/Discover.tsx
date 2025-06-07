@@ -554,63 +554,121 @@ const Discover: React.FC = () => {
   const SortDropdown = () => (
     <div ref={sortRef} style={{ position: 'relative' }}>
       <div 
-        style={{ 
-          fontSize: 20, 
-          fontWeight: 700, 
-          cursor: 'pointer', 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: 8,
-          padding: '8px 16px',
-          borderRadius: 12,
-          background: sortOpen ? '#2A2A2A' : 'transparent',
-          transition: 'all 0.2s ease'
+        style={{
+          fontSize: '18px',
+          fontWeight: 600,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '12px 20px',
+          borderRadius: '16px',
+          background: sortOpen 
+            ? 'rgba(223, 208, 184, 0.15)' 
+            : 'rgba(223, 208, 184, 0.08)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(223, 208, 184, 0.2)',
+          transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          color: '#DFD0B8',
+          fontFamily: 'Lora, serif',
+          letterSpacing: '0.5px',
+          boxShadow: sortOpen 
+            ? '0 8px 25px rgba(0, 0, 0, 0.3)' 
+            : '0 4px 15px rgba(0, 0, 0, 0.2)',
+          transform: sortOpen ? 'translateY(-2px)' : 'translateY(0)'
         }} 
         onClick={() => setSortOpen(s => !s)}
+        onMouseEnter={e => {
+          if (!sortOpen) {
+            e.currentTarget.style.background = 'rgba(223, 208, 184, 0.12)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.25)';
+          }
+        }}
+        onMouseLeave={e => {
+          if (!sortOpen) {
+            e.currentTarget.style.background = 'rgba(223, 208, 184, 0.08)';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+          }
+        }}
       >
         SORT BY
         <span style={{ 
           transform: sortOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-          transition: 'transform 0.2s ease'
+          transition: 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          fontSize: '14px',
+          opacity: 0.8
         }}>
           ▼
         </span>
       </div>
       {sortOpen && (
-        <div style={{ 
-          position: 'absolute', 
-          top: '100%', 
+        <div style={{
+          position: 'absolute',
+          top: '100%',
           left: 0,
-          marginTop: 8,
-          background: '#1A1A1A', 
-          border: '1px solid #DFD0B8', 
-          borderRadius: 12, 
-          zIndex: 20, 
-          padding: 8,
-          minWidth: 280,
-          boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
-          backdropFilter: 'blur(10px)'
+          marginTop: '12px',
+          background: 'rgba(20, 20, 20, 0.95)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(223, 208, 184, 0.2)',
+          borderRadius: '20px',
+          zIndex: 20,
+          padding: '12px',
+          minWidth: '320px',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
+          animation: 'fadeInDown 0.3s ease-out',
+          overflow: 'hidden'
         }}>
-          {SORT_OPTIONS.map(opt => (
+          {SORT_OPTIONS.map((opt, index) => (
             <div 
-              key={opt.value} 
-              style={{ 
-                padding: '12px 16px', 
-                cursor: 'pointer', 
-                color: sort === opt.value ? '#FFFFFF' : '#DFD0B8', 
-                fontWeight: sort === opt.value ? 700 : 400,
+              key={opt.value}
+              style={{
+                padding: '14px 18px',
+                cursor: 'pointer',
+                color: sort === opt.value ? '#FFFFFF' : '#DFD0B8',
+                fontWeight: sort === opt.value ? 600 : 400,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 12,
-                borderRadius: 8,
+                gap: '16px',
+                borderRadius: '12px',
                 transition: 'all 0.2s ease',
-                background: sort === opt.value ? '#2A2A2A' : 'transparent'
-              }} 
+                background: sort === opt.value 
+                  ? 'rgba(223, 208, 184, 0.15)' 
+                  : 'transparent',
+                marginBottom: index < SORT_OPTIONS.length - 1 ? '4px' : '0',
+                fontFamily: 'Lora, serif',
+                fontSize: '16px',
+                letterSpacing: '0.3px',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
               onClick={() => { 
                 setSort(opt.value); 
                 setSortOpen(false); 
               }}
+              onMouseEnter={e => {
+                if (sort !== opt.value) {
+                  e.currentTarget.style.background = 'rgba(223, 208, 184, 0.08)';
+                  e.currentTarget.style.transform = 'translateX(4px)';
+                }
+              }}
+              onMouseLeave={e => {
+                if (sort !== opt.value) {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.transform = 'translateX(0)';
+                }
+              }}
             >
+              {sort === opt.value && (
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  background: 'linear-gradient(135deg, #DFD0B8, #C9B896)',
+                  borderRadius: '50%',
+                  boxShadow: '0 0 10px rgba(223, 208, 184, 0.5)'
+                }} />
+              )}
               {opt.label}
             </div>
           ))}
@@ -619,57 +677,341 @@ const Discover: React.FC = () => {
     </div>
   );
 
+  // Add CSS animations to the document
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes fadeInUp {
+        from { 
+          opacity: 0; 
+          transform: translateY(30px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+      }
+      
+      @keyframes fadeInDown {
+        from { 
+          opacity: 0; 
+          transform: translateY(-20px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+      }
+      
+      @keyframes fadeInRight {
+        from { 
+          opacity: 0; 
+          transform: translateX(30px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateX(0); 
+        }
+      }
+      
+      @keyframes slideIn {
+        from { 
+          opacity: 0; 
+          transform: scale(0.9) translateY(20px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: scale(1) translateY(0); 
+        }
+      }
+      
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      
+      .video-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 32px;
+        margin: 48px;
+        animation: fadeInUp 0.8s ease-out;
+      }
+      
+      .modern-tab {
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .modern-tab::before {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #DFD0B8, #C9B896);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+        border-radius: 2px;
+      }
+      
+      .modern-tab.active::before {
+        transform: scaleX(1);
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   // Main Render
   return (
-    <div style={{ minHeight: '100vh', background: '#141414', color: '#DFD0B8', fontFamily: 'Lora, serif' }}>
-      {/* Header/Nav */}
-      <img
-        src="/logo.png"
-        alt="Anv Logo"
-        style={{ position: 'absolute', left: 19, top: 21, width: 'auto', height: 60, zIndex: 10, cursor: 'pointer' }}
-        onClick={() => navigate('/')} />
-      <div style={{ width: '100%', background: '#141414', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 97 }}>
-        <div style={{ display: 'flex', gap: 15, fontFamily: 'Lora, serif', fontSize: 24, fontWeight: 700, marginLeft: 983 }}>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
-          <span style={{ opacity: 0.6, cursor: 'pointer' }} onClick={() => { setTab('default'); }}>DISCOVER</span>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/profile')}>PROFILE</span>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
+      color: '#DFD0B8',
+      fontFamily: 'Lora, serif',
+      position: 'relative',
+      overflow: 'auto'
+    }}>
+      {/* Animated background elements */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        background: 'radial-gradient(circle at 20% 50%, rgba(223, 208, 184, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(223, 208, 184, 0.02) 0%, transparent 50%)',
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
+
+      {/* Header/Nav - keeping unchanged as requested */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <img
+          src="/logo.png"
+          alt="Anv Logo"
+          style={{
+            position: 'absolute',
+            left: 19,
+            top: 21,
+            width: 'auto',
+            height: 60,
+            zIndex: 10,
+            cursor: 'pointer',
+            transition: 'transform 0.3s ease',
+          }}
+          onClick={() => navigate('/')}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+        />
+        <div style={{
+          width: '100%',
+          background: 'rgba(20, 20, 20, 0.8)',
+          backdropFilter: 'blur(20px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          height: 97,
+          borderBottom: '1px solid rgba(223, 208, 184, 0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: 15,
+            fontFamily: 'Lora, serif',
+            fontSize: 24,
+            fontWeight: 700,
+            marginLeft: 983
+          }}>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
+            <span style={{ opacity: 0.6, cursor: 'pointer' }} onClick={() => { setTab('default'); }}>DISCOVER</span>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/profile')}>PROFILE</span>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
+          </div>
         </div>
       </div>
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: 32, marginTop: 32, marginLeft: 32, fontSize: 28, fontFamily: 'Lora, serif', fontWeight: 700 }}>
+
+      {/* Tabs with modern styling */}
+      <div style={{
+        display: 'flex',
+        gap: '40px',
+        marginTop: '40px',
+        marginLeft: '40px',
+        fontSize: '28px',
+        fontFamily: 'Lora, serif',
+        fontWeight: 700,
+        position: 'relative',
+        zIndex: 1
+      }}>
         {TABS.map(t => (
-          <span key={t.value} style={{ opacity: tab === t.value ? 0.6 : 1, cursor: 'pointer' }} onClick={() => setTab(t.value)}>{t.label}</span>
+          <span
+            key={t.value}
+            className={`modern-tab ${tab === t.value ? 'active' : ''}`}
+            style={{
+              opacity: tab === t.value ? 1 : 0.7,
+              cursor: 'pointer',
+              padding: '12px 0',
+              transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              letterSpacing: '0.5px',
+              position: 'relative'
+            }}
+            onClick={() => setTab(t.value)}
+            onMouseEnter={e => {
+              if (tab !== t.value) {
+                e.currentTarget.style.opacity = '0.9';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }
+            }}
+            onMouseLeave={e => {
+              if (tab !== t.value) {
+                e.currentTarget.style.opacity = '0.7';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
+            }}
+          >
+            {t.label}
+          </span>
         ))}
       </div>
-      {/* Sort Row (only for default tab) */}
+
+      {/* Sort Row (only for default tab) with modern styling */}
       {tab === 'default' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 32, marginTop: 32, marginLeft: 32 }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '32px',
+          marginTop: '32px',
+          marginLeft: '40px',
+          position: 'relative',
+          zIndex: 1
+        }}>
           <SortDropdown />
         </div>
       )}
-      {/* Main Content */}
-      {loading ? (
-        <div style={{ textAlign: 'center', fontSize: 32, color: '#DFD0B8', marginTop: 100 }}>Loading...</div>
-      ) : error ? (
-        <div style={{ textAlign: 'center', fontSize: 24, color: '#ff4d4f', marginTop: 100 }}>{error}</div>
-      ) : tab === 'friends' ? (
-        <FriendsFeed />
-      ) : tab === 'sunday' ? (
-        <SundayPicks />
-      ) : tab === 'trending' ? (
-        <TrendingThisWeek />
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 48, margin: '48px 48px 0 48px' }}>
-          {videos.length === 0 ? (
-            <div style={{ gridColumn: '1/-1', textAlign: 'center', fontSize: 24, color: '#DFD0B8' }}>No videos found.</div>
-          ) : (
-            videos.map((video, idx) => (
-              <VideoCard key={video._id + idx} video={video} />
-            ))
-          )}
-        </div>
-      )}
+
+      {/* Main Content with modern styling */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {loading ? (
+          <div style={{ 
+            minHeight: '50vh', 
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '20px'
+            }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                border: '3px solid #DFD0B8',
+                borderTop: '3px solid transparent',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }} />
+              <div style={{ 
+                color: '#DFD0B8', 
+                fontFamily: 'Lora, serif', 
+                fontSize: '18px',
+                fontWeight: 300,
+                letterSpacing: '0.5px'
+              }}>
+                Loading content...
+              </div>
+            </div>
+          </div>
+        ) : error ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '60px 40px',
+            background: 'rgba(255, 77, 77, 0.05)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '20px',
+            border: '1px solid rgba(255, 77, 77, 0.2)',
+            margin: '40px',
+            animation: 'fadeInUp 0.8s ease-out'
+          }}>
+            <div style={{
+              fontSize: '24px',
+              color: '#ff6b6b',
+              fontFamily: 'Bellefair, serif',
+              marginBottom: '10px'
+            }}>
+              {error}
+            </div>
+            <div style={{
+              fontSize: '16px',
+              color: 'rgba(255, 107, 107, 0.7)',
+              fontFamily: 'Lora, serif'
+            }}>
+              Please try refreshing the page or check your connection
+            </div>
+          </div>
+        ) : tab === 'friends' ? (
+          <FriendsFeed />
+        ) : tab === 'sunday' ? (
+          <SundayPicks />
+        ) : tab === 'trending' ? (
+          <TrendingThisWeek />
+        ) : (
+          <div className="video-grid">
+            {videos.length === 0 ? (
+              <div style={{
+                gridColumn: '1/-1',
+                textAlign: 'center',
+                padding: '60px 40px',
+                background: 'rgba(223, 208, 184, 0.05)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '20px',
+                border: '1px solid rgba(223, 208, 184, 0.1)',
+                animation: 'fadeInUp 0.8s ease-out'
+              }}>
+                <div style={{
+                  fontSize: '24px',
+                  color: '#DFD0B8',
+                  fontFamily: 'Bellefair, serif',
+                  marginBottom: '10px'
+                }}>
+                  No videos found
+                </div>
+                <div style={{
+                  fontSize: '16px',
+                  color: 'rgba(223, 208, 184, 0.7)',
+                  fontFamily: 'Lora, serif'
+                }}>
+                  Try adjusting your filters or check back later
+                </div>
+              </div>
+            ) : (
+              videos.map((video, idx) => (
+                <div
+                  key={video._id + idx}
+                  style={{
+                    animation: `fadeInUp 0.8s ease-out ${idx * 0.1}s both`
+                  }}
+                >
+                  <VideoCard video={video} />
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Add to List Modal */}
       {selectedVideoId && (

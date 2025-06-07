@@ -28,6 +28,94 @@ const Profile: React.FC = () => {
   // State for thumbnails
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
 
+  // Add CSS animations
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeInUp {
+        from { 
+          opacity: 0; 
+          transform: translateY(30px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+      }
+      
+      @keyframes slideInLeft {
+        from { 
+          opacity: 0; 
+          transform: translateX(-40px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateX(0); 
+        }
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      
+      .stat-card {
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+      
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      }
+      
+      .video-card {
+        transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .video-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+      }
+      
+      .video-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left 0.5s;
+      }
+      
+      .video-card:hover::before {
+        left: 100%;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Helper to get video thumbnail
+  const getThumbnail = (video: any) => {
+    if (!video) return '/logo.png';
+    return video.thumbnailUrl_youtube || '/logo.png';
+  };
+
   // Critique: Fetch all lists, then filter for Favs (isDefault) and Recent Activity (most recent submissions)
   useEffect(() => {
     setLoading(true);
@@ -102,19 +190,6 @@ const Profile: React.FC = () => {
     loadThumbnails();
   }, [favVideos, recentActivities]);
 
-  // Critique: Loading and error states are handled simply for now. Improve with skeletons/spinners for better UX.
-  if (loading) return <div style={{ color: '#DFD0B8', fontFamily: 'Lora, serif', fontSize: 32, textAlign: 'center', marginTop: 100 }}>Loading...</div>;
-  if (error) return <div style={{ color: '#ff4d4f', fontFamily: 'Lora, serif', fontSize: 24, textAlign: 'center', marginTop: 100 }}>{error}</div>;
-
-  // Critique: Defensive checks for missing user or lists
-  if (!user || !favList || !recentList) return <div style={{ color: '#DFD0B8', fontFamily: 'Lora, serif', fontSize: 24, textAlign: 'center', marginTop: 100 }}>Profile not found</div>;
-
-  // Helper to get video thumbnail
-  const getThumbnail = (video: any) => {
-    if (!video) return '/logo.png';
-    return video.thumbnailUrl_youtube || '/logo.png';
-  };
-
   // Helper to get video title
   const getTitle = (item: any) => {
     if (item.videoId && typeof item.videoId === 'object' && item.videoId.title) {
@@ -123,132 +198,565 @@ const Profile: React.FC = () => {
     return 'Untitled';
   };
 
-  // Critique: For now, use static stars (4/5) for all videos. Replace with real ratings if available.
-  const renderStars = (count = 4) => (
-    <span style={{ color: '#FFD700', fontSize: 24, letterSpacing: 2 }}>
-      {'★'.repeat(count)}<span style={{ color: '#DFD0B8' }}>{'★'.repeat(5 - count)}</span>
-    </span>
+  // Loading Component
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '20px'
+        }}>
+          <div style={{
+            width: '60px',
+            height: '60px',
+            border: '3px solid #DFD0B8',
+            borderTop: '3px solid transparent',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <div style={{
+            color: '#DFD0B8',
+            fontFamily: 'Lora, serif',
+            fontSize: '18px',
+            fontWeight: 300,
+            letterSpacing: '0.5px'
+          }}>
+            Loading profile...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          padding: '60px 40px',
+          background: 'rgba(255, 77, 77, 0.05)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '20px',
+          border: '1px solid rgba(255, 77, 77, 0.2)',
+          maxWidth: '400px'
+        }}>
+          <div style={{
+            fontSize: '24px',
+            color: '#ff6b6b',
+            fontFamily: 'Bellefair, serif',
+            marginBottom: '10px'
+          }}>
+            {error}
+          </div>
+          <div style={{
+            fontSize: '16px',
+            color: 'rgba(255, 107, 107, 0.7)',
+            fontFamily: 'Lora, serif'
+          }}>
+            Please try refreshing the page
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !favList || !recentList) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          padding: '60px 40px',
+          background: 'rgba(223, 208, 184, 0.05)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '20px',
+          border: '1px solid rgba(223, 208, 184, 0.1)',
+          maxWidth: '400px'
+        }}>
+          <div style={{
+            fontSize: '24px',
+            color: '#DFD0B8',
+            fontFamily: 'Bellefair, serif'
+          }}>
+            Profile not found
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Modern Video Card Component
+  const VideoCard = ({ video, index }: { video: any, index: number }) => (
+    <div
+      className="video-card"
+      style={{
+        width: '320px',
+        height: '180px',
+        borderRadius: '24px',
+        overflow: 'hidden',
+        background: 'rgba(20, 20, 20, 0.8)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(223, 208, 184, 0.1)',
+        cursor: 'pointer',
+        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)',
+        animation: `fadeInUp 0.8s ease-out ${index * 0.1}s both`
+      }}
+      onClick={() => navigate('/home', { state: { videoId: video._id } })}
+    >
+      <img
+        src={getThumbnail(video)}
+        alt={video.title_youtube || video.title || 'Untitled'}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          borderRadius: '24px'
+        }}
+      />
+    </div>
   );
 
-  // Critique: Favs and Recent Activity use the same list for now. Replace with real data if available.
   return (
-    <div style={{ minHeight: '100vh', background: '#141414', color: '#DFD0B8', fontFamily: 'Lora, serif' }}>
-      {/* Header/Nav */}
-      <img
-        src="/logo.png"
-        alt="Anv Logo"
-        style={{ position: 'absolute', left: 19, top: 21, width: 'auto', height: 60, zIndex: 10, cursor: 'pointer' }}
-        onClick={() => navigate('/')} />
-      <div style={{ width: '100%', background: '#141414', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 97 }}>
-        <div style={{ display: 'flex', gap: 15, fontFamily: 'Lora, serif', fontSize: 24, fontWeight: 700, marginLeft: 983 }}>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/discover')}>DISCOVER</span>
-          <span style={{ opacity: 0.6, cursor: 'pointer',  }} onClick={() => navigate('/profile')}>PROFILE</span>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
-        </div>
-      </div>
-      {/* Profile Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 32, marginTop: 48, marginLeft: 80 }}>
-        {/* Avatar */}
-        <div style={{ width: 160, height: 160, borderRadius: '50%', overflow: 'hidden', background: '#1A1A1A', border: '4px solid #DFD0B8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {/* Critique: Use a static avatar for now. Replace with user.avatar if available. */}
-          <img src={user.avatarUrl} alt="avatar" style={{ width: 140, height: 140, borderRadius: '50%' }} />
-        </div>
-        {/* User Info */}
-        <div style={{ marginTop: 16 }}>
-          <div style={{ fontFamily: 'Alfa Slab One, serif', fontSize: 56, color: '#DFD0B8', fontWeight: 700 }}>{user.name}</div>
-          <div style={{ fontSize: 22, color: '#DFD0B8', opacity: 0.7, marginTop: 2 }}>@{user.username}</div>
-          <button 
-            style={{ marginTop: 8, marginRight: 16, fontFamily: 'Lora, serif', fontSize: 18, background: '#DFD0B8', color: '#141414', border: 'none', borderRadius: 8, padding: '4px 16px', fontWeight: 700, cursor: 'pointer' }}
-            onClick={() => setIsEditModalOpen(true)}
-          >
-            edit profile
-          </button>
-          {/* Logout button */}
-          <button style={{ marginTop: 8, marginRight: 16, fontFamily: 'Lora, serif', fontSize: 18, background: '#AFB774', color: '#141414', border: 'none', borderRadius: 8, padding: '4px 16px', fontWeight: 700, cursor: 'pointer' }}
-            onClick={() => { logout(); navigate('/login'); }}>
-            logout
-          </button>
-          {/* Share button placeholder */}
-          <span style={{ display: 'inline-block', width: 32, height: 32, borderRadius: '50%', background: '#DFD0B8', marginLeft: 8, verticalAlign: 'middle' }} />
-          <span style={{ marginLeft: 8, fontSize: 16, color: '#DFD0B8', opacity: 0.7 }}>share button</span>
-          <div style={{ fontSize: 18, color: '#DFD0B8', marginTop: 12 }}>{user.bio}</div>
-          <div style={{ fontSize: 16, color: '#DFD0B8', opacity: 0.7, marginTop: 4 }}>Member since 2025</div>
-        </div>
-        {/* Stats */}
-        <div style={{ display: 'flex', gap: 48, marginLeft: 120, marginTop: 24 }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 48, fontWeight: 700, color: '#DFD0B8' }}>{submissionCount}</div>
-            <div style={{ fontSize: 20, color: '#DFD0B8', opacity: 0.8 }}>Videos Added</div>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
+      color: '#DFD0B8',
+      fontFamily: 'Lora, serif',
+      position: 'relative',
+      overflow: 'auto'
+    }}>
+      {/* Animated background elements */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        background: 'radial-gradient(circle at 20% 50%, rgba(223, 208, 184, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(223, 208, 184, 0.02) 0%, transparent 50%)',
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
+
+      {/* Header/Nav - keeping unchanged */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <img
+          src="/logo.png"
+          alt="Anv Logo"
+          style={{
+            position: 'absolute',
+            left: 19,
+            top: 21,
+            width: 'auto',
+            height: 60,
+            zIndex: 10,
+            cursor: 'pointer',
+            transition: 'transform 0.3s ease',
+          }}
+          onClick={() => navigate('/')}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+        />
+        <div style={{
+          width: '100%',
+          background: 'rgba(20, 20, 20, 0.8)',
+          backdropFilter: 'blur(20px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          height: 97,
+          borderBottom: '1px solid rgba(223, 208, 184, 0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: 15,
+            fontFamily: 'Lora, serif',
+            fontSize: 24,
+            fontWeight: 700,
+            marginLeft: 983
+          }}>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/discover')}>DISCOVER</span>
+            <span style={{ opacity: 0.6, cursor: 'pointer' }} onClick={() => navigate('/profile')}>PROFILE</span>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 48, fontWeight: 700, color: '#DFD0B8' }}>{listCount}</div>
-            <div style={{ fontSize: 20, color: '#DFD0B8', opacity: 0.8 }}>Lists</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 48, fontWeight: 700, color: '#DFD0B8' }}>{followersCount}</div>
-            <div style={{ fontSize: 20, color: '#DFD0B8', opacity: 0.8 }}>Followers</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 48, fontWeight: 700, color: '#DFD0B8' }}>{followingCount}</div>
-            <div style={{ fontSize: 20, color: '#DFD0B8', opacity: 0.8 }}>Following</div>
-          </div>
-        </div>
-      </div>
-      {/* Favs */}
-      <div style={{ marginTop: 64, marginLeft: 48, marginRight: 48 }}>
-        <div style={{ fontFamily: 'Lora, serif', fontSize: 40, fontWeight: 700, color: '#DFD0B8', marginBottom: 16 }}>Favs</div>
-        <div style={{ display: 'flex', gap: 32 }}>
-          {favVideos.length === 0 ? (
-            <div style={{ color: '#AFB774' }}>No favorites yet.</div>
-          ) : (
-            favVideos.map((video: any, idx: number) => (
-              <div key={video._id || idx} style={{ width: 320, height: 180, borderRadius: 32, overflow: 'hidden', background: '#1A1A1A', border: '3px solid #848484', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} 
-              onClick={e => {
-                navigate('/home', { state: { videoId: video._id } });
-              }}>
-                <img src={getThumbnail(video)} alt={video.title_youtube || video.title || 'Untitled'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 32 }} />
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-      {/* Recent Activity */}
-      <div style={{ marginTop: 48, marginLeft: 48, marginRight: 48 }}>
-        <div style={{ fontFamily: 'Lora, serif', fontSize: 40, fontWeight: 700, color: '#DFD0B8', marginBottom: 16 }}>Recent Activity</div>
-        <div style={{ display: 'flex', gap: 32 }}>
-          {recentActivities.length === 0 ? (
-            <div style={{ color: '#AFB774' }}>No recent activity.</div>
-          ) : (
-            recentActivities.map((video: any, idx: number) => (
-              <div key={video._id || idx} style={{ width: 320, height: 180, borderRadius: 32, overflow: 'hidden', background: '#1A1A1A', border: '3px solid #848484', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer' }} onClick={e => {
-                navigate('/home', { state: { videoId: video._id } });
-                }}>
-                <img src={getThumbnail(video)} alt={video.title_youtube || video.title || 'Untitled'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 32 }} />
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-      {/* Following */}
-      <div style={{ marginTop: 48, marginLeft: 48, marginRight: 48, marginBottom: 64 }}>
-        <div style={{ fontFamily: 'Lora, serif', fontSize: 40, fontWeight: 700, color: '#DFD0B8', marginBottom: 16 }}>Following</div>
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', maxWidth: 1200 }}>
-          {followingUsers.length === 0 ? (
-            <div style={{ color: '#AFB774' }}>Not following anyone yet.</div>
-          ) : (
-            followingUsers.map((f, idx) => (
-              <div key={f._id || idx} style={{ width: 56, height: 56, borderRadius: '50%', background: '#DFD0B8', opacity: 0.9, display: 'inline-block', margin: 8, overflow: 'hidden', border: '2px solid #AFB774', cursor: 'pointer' }} onClick={() => navigate(`/profile/${f.username}`)}>
-                <img src={f.avatarUrl || '/logo.png'} alt={f.username || 'user'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-              </div>
-            ))
-          )}
         </div>
       </div>
 
-      <EditProfileModal 
+      {/* Main Content */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* Profile Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '40px',
+          marginTop: '60px',
+          marginLeft: '80px',
+          animation: 'slideInLeft 0.8s ease-out'
+        }}>
+          {/* Avatar */}
+          <div style={{
+            width: '160px',
+            height: '160px',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            background: 'rgba(26, 26, 26, 0.8)',
+            backdropFilter: 'blur(10px)',
+            border: '4px solid rgba(223, 208, 184, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.4)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
+          }}
+          >
+            <img
+              src={user.avatarUrl}
+              alt="avatar"
+              style={{
+                width: '140px',
+                height: '140px',
+                borderRadius: '50%',
+                objectFit: 'cover'
+              }}
+            />
+          </div>
+
+          {/* User Info */}
+          <div style={{ marginTop: '16px', flex: 1 }}>
+            <div style={{
+              fontFamily: 'Bellefair, serif',
+              fontSize: '56px',
+              color: '#DFD0B8',
+              fontWeight: 700,
+              marginBottom: '8px',
+              textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+            }}>
+              {user.name}
+            </div>
+            <div style={{
+              fontSize: '22px',
+              color: 'rgba(223, 208, 184, 0.7)',
+              marginBottom: '20px'
+            }}>
+              @{user.username}
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+              <button
+                style={{
+                  fontFamily: 'Lora, serif',
+                  fontSize: '16px',
+                  background: 'rgba(223, 208, 184, 0.15)',
+                  backdropFilter: 'blur(10px)',
+                  color: '#DFD0B8',
+                  border: '1px solid rgba(223, 208, 184, 0.3)',
+                  borderRadius: '12px',
+                  padding: '12px 24px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  letterSpacing: '0.5px'
+                }}
+                onClick={() => setIsEditModalOpen(true)}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(223, 208, 184, 0.25)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(223, 208, 184, 0.15)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                edit profile
+              </button>
+              <button
+                style={{
+                  fontFamily: 'Lora, serif',
+                  fontSize: '16px',
+                  background: 'rgba(175, 183, 116, 0.15)',
+                  backdropFilter: 'blur(10px)',
+                  color: '#AFB774',
+                  border: '1px solid rgba(175, 183, 116, 0.3)',
+                  borderRadius: '12px',
+                  padding: '12px 24px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  letterSpacing: '0.5px'
+                }}
+                onClick={() => { logout(); navigate('/login'); }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(175, 183, 116, 0.25)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(175, 183, 116, 0.15)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                logout
+              </button>
+            </div>
+
+            <div style={{
+              fontSize: '18px',
+              color: 'rgba(223, 208, 184, 0.9)',
+              marginBottom: '8px',
+              lineHeight: 1.5
+            }}>
+              {user.bio}
+            </div>
+            <div style={{
+              fontSize: '16px',
+              color: 'rgba(223, 208, 184, 0.6)'
+            }}>
+              Member since 2025
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div style={{
+            display: 'flex',
+            gap: '32px',
+            marginTop: '24px',
+            animation: 'fadeInUp 0.8s ease-out 0.3s both'
+          }}>
+            {[
+              { label: 'Videos Added', value: submissionCount },
+              { label: 'Lists', value: listCount },
+              { label: 'Followers', value: followersCount },
+              { label: 'Following', value: followingCount }
+            ].map((stat, index) => (
+              <div
+                key={stat.label}
+                className="stat-card"
+                style={{
+                  textAlign: 'center',
+                  padding: '24px 20px',
+                  background: 'rgba(223, 208, 184, 0.05)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(223, 208, 184, 0.1)',
+                  minWidth: '120px',
+                  cursor: 'pointer'
+                }}
+              >
+                <div style={{
+                  fontSize: '36px',
+                  fontWeight: 700,
+                  color: '#DFD0B8',
+                  marginBottom: '8px',
+                  fontFamily: 'Bellefair, serif'
+                }}>
+                  {stat.value}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: 'rgba(223, 208, 184, 0.7)',
+                  fontWeight: 500,
+                  letterSpacing: '0.5px'
+                }}>
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Favs Section */}
+        <div style={{
+          marginTop: '80px',
+          marginLeft: '48px',
+          marginRight: '48px',
+          animation: 'fadeInUp 0.8s ease-out 0.5s both'
+        }}>
+          <div style={{
+            fontFamily: 'Bellefair, serif',
+            fontSize: '40px',
+            fontWeight: 700,
+            color: '#DFD0B8',
+            marginBottom: '32px',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+          }}>
+            Favs
+          </div>
+          <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+            {favVideos.length === 0 ? (
+              <div style={{
+                padding: '40px',
+                background: 'rgba(175, 183, 116, 0.05)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '16px',
+                border: '1px solid rgba(175, 183, 116, 0.1)',
+                color: 'rgba(175, 183, 116, 0.8)',
+                fontFamily: 'Lora, serif',
+                fontSize: '18px'
+              }}>
+                No favorites yet. Start adding videos to see them here!
+              </div>
+            ) : (
+              favVideos.map((video: any, idx: number) => (
+                <VideoCard key={video._id || idx} video={video} index={idx} />
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Recent Activity Section */}
+        <div style={{
+          marginTop: '64px',
+          marginLeft: '48px',
+          marginRight: '48px',
+          animation: 'fadeInUp 0.8s ease-out 0.7s both'
+        }}>
+          <div style={{
+            fontFamily: 'Bellefair, serif',
+            fontSize: '40px',
+            fontWeight: 700,
+            color: '#DFD0B8',
+            marginBottom: '32px',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+          }}>
+            Recent Activity
+          </div>
+          <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+            {recentActivities.length === 0 ? (
+              <div style={{
+                padding: '40px',
+                background: 'rgba(175, 183, 116, 0.05)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '16px',
+                border: '1px solid rgba(175, 183, 116, 0.1)',
+                color: 'rgba(175, 183, 116, 0.8)',
+                fontFamily: 'Lora, serif',
+                fontSize: '18px'
+              }}>
+                No recent activity. Start exploring and rating videos!
+              </div>
+            ) : (
+              recentActivities.map((video: any, idx: number) => (
+                <VideoCard key={video._id || idx} video={video} index={idx} />
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Following Section */}
+        <div style={{
+          marginTop: '64px',
+          marginLeft: '48px',
+          marginRight: '48px',
+          marginBottom: '80px',
+          animation: 'fadeInUp 0.8s ease-out 0.9s both'
+        }}>
+          <div style={{
+            fontFamily: 'Bellefair, serif',
+            fontSize: '40px',
+            fontWeight: 700,
+            color: '#DFD0B8',
+            marginBottom: '32px',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+          }}>
+            Following
+          </div>
+          <div style={{
+            display: 'flex',
+            gap: '24px',
+            flexWrap: 'wrap',
+            maxWidth: '1200px'
+          }}>
+            {followingUsers.length === 0 ? (
+              <div style={{
+                padding: '40px',
+                background: 'rgba(175, 183, 116, 0.05)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '16px',
+                border: '1px solid rgba(175, 183, 116, 0.1)',
+                color: 'rgba(175, 183, 116, 0.8)',
+                fontFamily: 'Lora, serif',
+                fontSize: '18px'
+              }}>
+                Not following anyone yet. Discover and follow interesting people!
+              </div>
+            ) : (
+              followingUsers.map((f, idx) => (
+                <div
+                  key={f._id || idx}
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    background: 'rgba(223, 208, 184, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(175, 183, 116, 0.3)',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                    animation: `fadeInUp 0.6s ease-out ${idx * 0.1}s both`
+                  }}
+                  onClick={() => navigate(`/profile/${f.username}`)}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.4)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
+                  }}
+                >
+                  <img
+                    src={f.avatarUrl || '/logo.png'}
+                    alt={f.username || 'user'}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      <EditProfileModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
+        user={user}
       />
     </div>
   );

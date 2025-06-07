@@ -1,199 +1,444 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // Critique: This About page goes all out with modern web design trends: glassmorphism, gradients, animated SVGs, bold fonts, and a tech stack grid. All styles are inline for now for rapid iteration, but should be moved to CSS-in-JS or modules for maintainability.
 
 const GITHUB_URL = 'https://github.com/manan152003/anv';
 
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
 const About: React.FC = () => {
   const navigate = useNavigate();
+  const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
+
+  // Add CSS animations
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeInUp {
+        from { 
+          opacity: 0; 
+          transform: translateY(30px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+      }
+      
+      @keyframes slideInLeft {
+        from { 
+          opacity: 0; 
+          transform: translateX(-40px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateX(0); 
+        }
+      }
+      
+      @keyframes glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(223, 208, 184, 0.3); }
+        50% { box-shadow: 0 0 30px rgba(223, 208, 184, 0.5); }
+      }
+      
+      .feature-card {
+        transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+      
+      .feature-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+      }
+      
+      .faq-item {
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+      
+      .faq-item:hover {
+        transform: translateX(8px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  const faqs: FAQItem[] = [
+    {
+      question: "What is Anv?",
+      answer: "Anv (अन्वेषण - anveSaNa) means 'to seek' in Sanskrit. We're a social video discovery platform that helps you break free from algorithmic recommendations. Instead of AI deciding what you watch, discover videos through the recommendations of like-minded peers and curators."
+    },
+    {
+      question: "How is this different from YouTube?",
+      answer: "While YouTube relies heavily on algorithms to suggest content, Anv takes a more human approach. We believe in the power of peer recommendations and community curation. Think of it as discovering videos through friends with great taste, rather than through an algorithm."
+    },
+    {
+      question: "What kind of content can I find here?",
+      answer: "You'll find videos shared by our community members - from thought-provoking documentaries to hidden gems of entertainment. The content is diverse, but what sets it apart is that each video is recommended by real people, not algorithms."
+    },
+    {
+      question: "How does social discovery work?",
+      answer: "Connect with people whose taste you trust, see what they're watching, create and share collections, and engage in meaningful discussions about the content. It's about building connections through shared interests in video content."
+    },
+    {
+      question: "Can I contribute?",
+      answer: "Absolutely! Create an account to start sharing your favorite videos, build collections, write reviews, and connect with others. Your recommendations help others discover great content, making our community stronger."
+    }
+  ];
+
   return (
     <div style={{
       minHeight: '100vh',
-      width: '100vw',
-      background: 'radial-gradient(ellipse at 60% 10%, #210f37 0%, #141414 60%, #1A1A1A 100%)',
+      width: '100%',
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
       color: '#DFD0B8',
       fontFamily: 'Lora, serif',
-      overflowX: 'hidden',
       position: 'relative',
+      overflow: 'auto'
     }}>
-      {/* Animated Gradient Blobs */}
+      {/* Animated background elements */}
       <div style={{
-        position: 'absolute',
-        top: '-200px',
-        left: '-200px',
-        width: 600,
-        height: 600,
-        background: 'radial-gradient(circle at 30% 30%, #FFD700 0%, #210f37 80%)',
-        filter: 'blur(120px)',
-        opacity: 0.5,
-        zIndex: 1,
-        animation: 'blob1 12s infinite alternate',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        background: 'radial-gradient(circle at 20% 50%, rgba(223, 208, 184, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(223, 208, 184, 0.02) 0%, transparent 50%)',
+        pointerEvents: 'none',
+        zIndex: 0
       }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '-300px',
-        right: '-300px',
-        width: 800,
-        height: 800,
-        background: 'radial-gradient(circle at 70% 70%, #7C6B6B 0%, #210f37 80%)',
-        filter: 'blur(180px)',
-        opacity: 0.6,
-        zIndex: 1,
-        animation: 'blob2 14s infinite alternate',
-      }} />
-      {/* Header/Nav */}
-      <img
-        src="/logo.png"
-        alt="Anv Logo"
-        style={{ position: 'absolute', left: 19, top: 21, width: 'auto', height: 60, zIndex: 10, cursor: 'pointer' }}
-        onClick={() => navigate('/')} />
-      <div style={{ width: '100%', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', height: 97, zIndex: 10, position: 'relative' }}>
-        <div style={{ display: 'flex', gap: 15, fontFamily: 'Lora, serif', fontSize: 24, fontWeight: 700, marginRight: 80 }}>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/discover')}>DISCOVER</span>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/profile')}>PROFILE</span>
-          <span style={{ opacity: 0.6, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
-        </div>
-      </div>
-      {/* Hero Section */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '60vh',
-        zIndex: 2,
-        position: 'relative',
-        marginTop: 60,
-      }}>
-        {/* Animated SVG Icon */}
-        <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginBottom: 24, filter: 'drop-shadow(0 0 32px #FFD70088)', animation: 'spin 12s linear infinite' }}>
-          <circle cx="60" cy="60" r="54" stroke="#FFD700" strokeWidth="8" fill="none" />
-          <path d="M60 20 L80 100 L40 100 Z" fill="#DFD0B8" stroke="#210f37" strokeWidth="3" />
-        </svg>
-        <h1 style={{
-          fontFamily: 'Alfa Slab One, serif',
-          fontSize: 90,
-          fontWeight: 700,
-          color: '#FFD700',
-          letterSpacing: '-2px',
-          textShadow: '0 8px 32px #210f37, 0 2px 0 #DFD0B8',
-          margin: 0,
-          lineHeight: 1.05,
-          textAlign: 'center',
-          background: 'linear-gradient(90deg, #FFD700 40%, #DFD0B8 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          filter: 'drop-shadow(0 0 32px #210f37AA)',
-        }}>
-          FEEL BORED
-        </h1>
-        <div style={{
-          fontFamily: 'Lora, serif',
-          fontSize: 32,
-          color: '#DFD0B8',
-          opacity: 0.85,
-          marginTop: 18,
-          marginBottom: 32,
-          textAlign: 'center',
-          maxWidth: 900,
-          fontWeight: 500,
-          textShadow: '0 2px 12px #210f37',
-        }}>
-          The <span style={{ color: '#FFD700', fontWeight: 700 }}>iconic</span> video discovery platform. <br />
-          Minimal. Social. <span style={{ color: '#FFD700', fontWeight: 700 }}>Legendary.</span>
-        </div>
-        {/* Glassmorphic Info Card */}
-        <div style={{
-          background: 'rgba(33,15,55,0.55)',
-          border: '2.5px solid #FFD700',
-          borderRadius: 36,
-          boxShadow: '0 8px 48px #210f37AA',
-          padding: '48px 64px',
-          maxWidth: 700,
-          margin: '0 auto',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          marginBottom: 48,
-          zIndex: 3,
-        }}>
-          <div style={{ fontSize: 28, fontWeight: 600, color: '#FFD700', marginBottom: 18, letterSpacing: 1 }}>What is Feel Bored?</div>
-          <div style={{ fontSize: 22, color: '#DFD0B8', lineHeight: 1.5, marginBottom: 18 }}>
-            <b>Feel Bored</b> is a curated video discovery platform inspired by Letterboxd, Are.na, and the golden age of YouTube.<br />
-            <span style={{ color: '#FFD700' }}>Find, share, and discuss</span> videos worth your time, in a premium, distraction-free, and <span style={{ color: '#FFD700' }}>modern</span> environment.
-          </div>
-          <div style={{ fontSize: 20, color: '#AFB774', marginBottom: 12 }}>
-            Built with React, TypeScript, Node, Express, MongoDB, and a sprinkle of <span style={{ color: '#FFD700' }}>✨ magic</span>.
-          </div>
-          <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" style={{
-            color: '#FFD700',
-            fontWeight: 700,
-            fontSize: 22,
-            textDecoration: 'underline',
-            marginTop: 12,
-            display: 'inline-block',
-            letterSpacing: 1,
-          }}>View on GitHub</a>
-        </div>
-        {/* Tech Stack Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(5, 1fr)',
-          gap: 36,
-          margin: '0 auto',
-          maxWidth: 700,
-          marginBottom: 64,
-        }}>
-          {/* Critique: Use SVGs for crispness. Add more icons as needed. */}
-          <img src="/vite.svg" alt="Vite" style={{ width: 64, height: 64, filter: 'drop-shadow(0 0 12px #FFD70088)' }} />
-          <img src="/logo.svg" alt="Custom" style={{ width: 64, height: 64, filter: 'drop-shadow(0 0 12px #DFD0B888)' }} />
-          <img src="/react.svg" alt="React" style={{ width: 64, height: 64, filter: 'drop-shadow(0 0 12px #61dafbaa)' }} />
-          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="16" fill="#210f37" /><text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="32" fill="#FFD700" fontFamily="Lora, serif">TS</text></svg>
-          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="16" fill="#210f37" /><text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="32" fill="#DFD0B8" fontFamily="Lora, serif">Node</text></svg>
-        </div>
-        {/* Call to Action */}
-        <div style={{
-          fontSize: 32,
-          color: '#FFD700',
-          fontWeight: 700,
-          marginTop: 24,
-          marginBottom: 12,
-          textShadow: '0 2px 12px #210f37',
-          letterSpacing: 1,
-        }}>
-          Ready to get inspired?
-        </div>
-        <button
-          onClick={() => navigate('/discover')}
+      {/* Header/Nav - keeping unchanged */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <img
+          src="/logo.png"
+          alt="Anv Logo"
           style={{
-            fontFamily: 'Lora, serif',
-            fontSize: 28,
-            fontWeight: 700,
-            color: '#210f37',
-            background: 'linear-gradient(90deg, #FFD700 0%, #DFD0B8 100%)',
-            border: 'none',
-            borderRadius: 18,
-            padding: '18px 54px',
-            boxShadow: '0 4px 32px #FFD70044',
+            position: 'absolute',
+            left: 19,
+            top: 21,
+            width: 'auto',
+            height: 60,
+            zIndex: 10,
             cursor: 'pointer',
-            marginTop: 8,
-            marginBottom: 64,
-            transition: 'transform 0.18s cubic-bezier(.4,2,.6,1)',
-            outline: 'none',
+            transition: 'transform 0.3s ease',
           }}
-          onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.07)')}
-          onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
-        >
-          Discover Videos
-        </button>
+          onClick={() => navigate('/')}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+        />
+        <div style={{
+          width: '100%',
+          background: 'rgba(20, 20, 20, 0.8)',
+          backdropFilter: 'blur(20px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          height: 97,
+          borderBottom: '1px solid rgba(223, 208, 184, 0.1)',
+          position: 'relative',
+          zIndex: 10
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: 15,
+            fontFamily: 'Lora, serif',
+            fontSize: 24,
+            fontWeight: 700,
+            marginRight: 80
+          }}>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/discover')}>DISCOVER</span>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/profile')}>PROFILE</span>
+            <span style={{ opacity: 0.6, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
+          </div>
+        </div>
       </div>
-      {/* Critique: For maintainability, move animations to CSS or styled-components. For accessibility, ensure all text has sufficient contrast and all images have alt text. */}
-      {/* Keyframes for blobs and spin (inject into global CSS in production) */}
+
+      {/* Main Content */}
+      <main style={{
+        maxWidth: '900px',
+        margin: '0 auto',
+        padding: '4rem 2rem',
+        position: 'relative',
+        zIndex: 1
+      }}>
+        {/* Introduction */}
+        <section style={{
+          marginBottom: '5rem',
+          textAlign: 'center',
+          animation: 'fadeInUp 0.8s ease-out'
+        }}>
+          <h1 style={{
+            fontSize: 'clamp(2.5rem, 5vw, 3.5rem)',
+            fontWeight: 400,
+            marginBottom: '2rem',
+            letterSpacing: '-0.02em',
+            fontFamily: 'Bellefair, serif',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
+            background: 'linear-gradient(135deg, #DFD0B8, #C9B896)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}>
+            About Anv
+          </h1>
+          <div style={{
+            fontSize: '1.8rem',
+            color: 'rgba(223, 208, 184, 0.8)',
+            marginBottom: '2.5rem',
+            fontFamily: 'Bellefair, serif',
+            animation: 'fadeInUp 0.8s ease-out 0.2s both'
+          }}>
+            अन्वेषण (anveSaNa)
+          </div>
+          <p style={{
+            fontSize: '1.3rem',
+            color: 'rgba(223, 208, 184, 0.9)',
+            lineHeight: 1.7,
+            maxWidth: '700px',
+            margin: '0 auto',
+            background: 'rgba(223, 208, 184, 0.05)',
+            backdropFilter: 'blur(10px)',
+            padding: '2rem',
+            borderRadius: '20px',
+            border: '1px solid rgba(223, 208, 184, 0.1)',
+            animation: 'fadeInUp 0.8s ease-out 0.4s both'
+          }}>
+            Seeking meaningful content through human connection. 
+            Break free from algorithms, discover videos through your peers.
+          </p>
+        </section>
+
+        {/* Key Features */}
+        <section style={{
+          marginBottom: '5rem',
+          animation: 'fadeInUp 0.8s ease-out 0.6s both'
+        }}>
+          <h2 style={{
+            fontSize: '2.5rem',
+            fontWeight: 400,
+            marginBottom: '3rem',
+            color: '#DFD0B8',
+            textAlign: 'center',
+            fontFamily: 'Bellefair, serif',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+          }}>
+            Why Anv?
+          </h2>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '2.5rem',
+          }}>
+            {[
+              {
+                title: "Social Discovery",
+                desc: "Find videos through people, not algorithms",
+                icon: "🤝"
+              },
+              {
+                title: "Peer Recommendations",
+                desc: "Trust in human curation and genuine sharing",
+                icon: "💡"
+              },
+              {
+                title: "Meaningful Connections",
+                desc: "Connect with others through shared video interests",
+                icon: "❤️"
+              }
+            ].map((feature, index) => (
+              <div 
+                key={index} 
+                className="feature-card"
+                style={{
+                  padding: '2.5rem',
+                  background: 'rgba(223, 208, 184, 0.05)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '20px',
+                  border: '1px solid rgba(223, 208, 184, 0.1)',
+                  textAlign: 'center',
+                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)',
+                  animation: `fadeInUp 0.8s ease-out ${0.8 + index * 0.1}s both`
+                }}
+              >
+                <div style={{
+                  fontSize: '3rem',
+                  marginBottom: '1.5rem',
+                  animation: 'glow 2s ease-in-out infinite'
+                }}>
+                  {feature.icon}
+                </div>
+                <h3 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 600,
+                  marginBottom: '1rem',
+                  color: '#DFD0B8',
+                  fontFamily: 'Bellefair, serif'
+                }}>{feature.title}</h3>
+                <p style={{
+                  fontSize: '1.1rem',
+                  color: 'rgba(223, 208, 184, 0.8)',
+                  lineHeight: 1.6,
+                  fontFamily: 'Lora, serif'
+                }}>{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section style={{
+          marginBottom: '5rem',
+          animation: 'fadeInUp 0.8s ease-out 1.2s both'
+        }}>
+          <h2 style={{
+            fontSize: '2.5rem',
+            fontWeight: 400,
+            marginBottom: '3rem',
+            color: '#DFD0B8',
+            textAlign: 'center',
+            fontFamily: 'Bellefair, serif',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+          }}>
+            Frequently Asked Questions
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="faq-item"
+                style={{
+                  background: 'rgba(223, 208, 184, 0.05)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(223, 208, 184, 0.1)',
+                  overflow: 'hidden',
+                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                  animation: `fadeInUp 0.6s ease-out ${1.4 + index * 0.1}s both`
+                }}
+              >
+                <div
+                  onClick={() => setExpandedFAQ(expandedFAQ === index ? null : index)}
+                  style={{
+                    padding: '2rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    userSelect: 'none',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = 'rgba(223, 208, 184, 0.08)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <h3 style={{
+                    fontSize: '1.3rem',
+                    fontWeight: 600,
+                    color: '#DFD0B8',
+                    fontFamily: 'Lora, serif'
+                  }}>{faq.question}</h3>
+                  <span style={{
+                    fontSize: '1.5rem',
+                    color: 'rgba(223, 208, 184, 0.7)',
+                    transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    transform: `rotate(${expandedFAQ === index ? '180deg' : '0deg'})`,
+                    display: 'inline-block'
+                  }}>↓</span>
+                </div>
+                <div style={{
+                  padding: expandedFAQ === index ? '0 2rem 2rem' : '0 2rem',
+                  fontSize: '1.1rem',
+                  color: 'rgba(223, 208, 184, 0.8)',
+                  lineHeight: 1.7,
+                  maxHeight: expandedFAQ === index ? '300px' : '0',
+                  opacity: expandedFAQ === index ? 1 : 0,
+                  transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                  overflow: 'hidden',
+                  fontFamily: 'Lora, serif'
+                }}>
+                  {faq.answer}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Call to Action */}
+        <section style={{
+          textAlign: 'center',
+          marginTop: '5rem',
+          padding: '4rem',
+          background: 'rgba(223, 208, 184, 0.05)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '24px',
+          border: '1px solid rgba(223, 208, 184, 0.1)',
+          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)',
+          animation: 'fadeInUp 0.8s ease-out 2s both'
+        }}>
+          <h2 style={{
+            fontSize: '2.2rem',
+            fontWeight: 400,
+            marginBottom: '2rem',
+            color: '#DFD0B8',
+            fontFamily: 'Bellefair, serif',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+          }}>
+            Ready to discover videos through human connection?
+          </h2>
+          <button
+            onClick={() => navigate('/discover')}
+            style={{
+              background: 'rgba(223, 208, 184, 0.15)',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(223, 208, 184, 0.3)',
+              color: '#DFD0B8',
+              padding: '1.2rem 3rem',
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              letterSpacing: '0.1em',
+              cursor: 'pointer',
+              borderRadius: '16px',
+              transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              fontFamily: 'Lora, serif',
+              textTransform: 'uppercase',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(223, 208, 184, 0.25)';
+              e.currentTarget.style.borderColor = 'rgba(223, 208, 184, 0.5)';
+              e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.4)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(223, 208, 184, 0.15)';
+              e.currentTarget.style.borderColor = 'rgba(223, 208, 184, 0.3)';
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+            }}
+          >
+            Start Exploring
+          </button>
+        </section>
+      </main>
+
       <style>{`
-        @keyframes blob1 { 0% { transform: scale(1) translate(0,0); } 100% { transform: scale(1.2) translate(60px, 40px); } }
-        @keyframes blob2 { 0% { transform: scale(1) translate(0,0); } 100% { transform: scale(1.1) translate(-40px, -60px); } }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+        
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
       `}</style>
     </div>
   );

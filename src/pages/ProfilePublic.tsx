@@ -142,9 +142,167 @@ const ProfilePublic: React.FC = () => {
     }
   };
 
-  // Critique: Loading and error states
-  if (loading) return <div style={{ color: '#DFD0B8', fontFamily: 'Lora, serif', fontSize: 32, textAlign: 'center', marginTop: 100 }}>Loading...</div>;
-  if (error || !profileUser) return <div style={{ color: '#ff4d4f', fontFamily: 'Lora, serif', fontSize: 24, textAlign: 'center', marginTop: 100 }}>{error || 'Profile not found'}</div>;
+  // Add CSS animations
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeInUp {
+        from { 
+          opacity: 0; 
+          transform: translateY(30px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+      }
+      
+      @keyframes slideInLeft {
+        from { 
+          opacity: 0; 
+          transform: translateX(-40px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateX(0); 
+        }
+      }
+      
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      
+      .stat-card {
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+      
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      }
+      
+      .video-card {
+        transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+      
+      .video-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Modern Video Card Component
+  const VideoCard = ({ video, index }: { video: any, index: number }) => (
+    <div
+      className="video-card"
+      style={{
+        width: '320px',
+        height: '180px',
+        borderRadius: '24px',
+        overflow: 'hidden',
+        background: 'rgba(20, 20, 20, 0.8)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(223, 208, 184, 0.1)',
+        cursor: 'pointer',
+        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)',
+        animation: `fadeInUp 0.8s ease-out ${index * 0.1}s both`
+      }}
+      onClick={() => navigate('/home', { state: { videoId: video._id } })}
+    >
+      <img
+        src={getThumbnail(video)}
+        alt={video.title_youtube || video.title || 'Untitled'}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          borderRadius: '24px'
+        }}
+      />
+    </div>
+  );
+
+  // Loading and error states with modern styling
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '20px'
+        }}>
+          <div style={{
+            width: '60px',
+            height: '60px',
+            border: '3px solid #DFD0B8',
+            borderTop: '3px solid transparent',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <div style={{
+            color: '#DFD0B8',
+            fontFamily: 'Lora, serif',
+            fontSize: '18px',
+            fontWeight: 300,
+            letterSpacing: '0.5px'
+          }}>
+            Loading profile...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !profileUser) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          padding: '60px 40px',
+          background: 'rgba(255, 77, 77, 0.05)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '20px',
+          border: '1px solid rgba(255, 77, 77, 0.2)',
+          maxWidth: '400px'
+        }}>
+          <div style={{
+            fontSize: '24px',
+            color: '#ff6b6b',
+            fontFamily: 'Bellefair, serif',
+            marginBottom: '10px'
+          }}>
+            {error || 'Profile not found'}
+          </div>
+          <div style={{
+            fontSize: '16px',
+            color: 'rgba(255, 107, 107, 0.7)',
+            fontFamily: 'Lora, serif'
+          }}>
+            Please check the username and try again
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Helper to get video thumbnail
   const getThumbnail = (video: any) => {
@@ -166,21 +324,72 @@ const ProfilePublic: React.FC = () => {
 
   // Critique: Render same layout as Profile, but with follow/unfollow button if not self
   return (
-    <div style={{ minHeight: '100vh', background: '#141414', color: '#DFD0B8', fontFamily: 'Lora, serif' }}>
-      {/* Header/Nav */}
-      <img
-        src="/logo.png"
-        alt="Anv Logo"
-        style={{ position: 'absolute', left: 19, top: 21, width: 'auto', height: 60, zIndex: 10, cursor: 'pointer' }}
-        onClick={() => navigate('/')} />
-      <div style={{ width: '100%', background: '#141414', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 97 }}>
-        <div style={{ display: 'flex', gap: 15, fontFamily: 'Lora, serif', fontSize: 24, fontWeight: 700, marginLeft: 983 }}>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/discover')}>DISCOVER</span>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/profile')}>PROFILE</span>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
+      color: '#DFD0B8',
+      fontFamily: 'Lora, serif',
+      position: 'relative',
+      overflow: 'auto'
+    }}>
+      {/* Animated background elements */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        background: 'radial-gradient(circle at 20% 50%, rgba(223, 208, 184, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(223, 208, 184, 0.02) 0%, transparent 50%)',
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
+      {/* Header/Nav - keeping unchanged */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <img
+          src="/logo.png"
+          alt="Anv Logo"
+          style={{
+            position: 'absolute',
+            left: 19,
+            top: 21,
+            width: 'auto',
+            height: 60,
+            zIndex: 10,
+            cursor: 'pointer',
+            transition: 'transform 0.3s ease',
+          }}
+          onClick={() => navigate('/')}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+        />
+        <div style={{
+          width: '100%',
+          background: 'rgba(20, 20, 20, 0.8)',
+          backdropFilter: 'blur(20px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          height: 97,
+          borderBottom: '1px solid rgba(223, 208, 184, 0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: 15,
+            fontFamily: 'Lora, serif',
+            fontSize: 24,
+            fontWeight: 700,
+            marginLeft: 983
+          }}>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/discover')}>DISCOVER</span>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/profile')}>PROFILE</span>
+            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
+          </div>
         </div>
       </div>
+
+      {/* Main Content */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
       {/* Profile Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 32, marginTop: 48, marginLeft: 80 }}>
         {/* Avatar */}
@@ -274,6 +483,7 @@ const ProfilePublic: React.FC = () => {
             ))
           )}
         </div>
+      </div>
       </div>
     </div>
   );

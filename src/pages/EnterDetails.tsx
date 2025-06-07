@@ -26,6 +26,7 @@ const EnterDetails: React.FC = () => {
   const DESCRIPTION_LIMIT = 200
   const [durationSeconds, setDurationSeconds] = useState<number | null>(null)
   const [uploadDate, setUploadDate] = useState<string>('')
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   // Get URL from location state
   const url = (location.state as LocationState)?.url
@@ -78,7 +79,6 @@ const EnterDetails: React.FC = () => {
       if (!videoId) return
 
       try {
-        // Check if API key exists
         const apiKey = import.meta.env.VITE_YT_KEY
         if (!apiKey || apiKey === 'your_youtube_api_key_here') {
           setTitle('default')
@@ -94,7 +94,6 @@ const EnterDetails: React.FC = () => {
         if (data.items && data.items.length > 0) {
           setTitle(data.items[0].snippet.title)
           setUploadDate(data.items[0].snippet.publishedAt)
-          // Parse ISO 8601 duration
           const iso = data.items[0].contentDetails.duration
           const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
           const [, h, m, s] = match ? match.map(Number) : []
@@ -136,7 +135,6 @@ const EnterDetails: React.FC = () => {
       }
       console.log('Submitting video:', submission)
       const videoId = await submitVideo(submission)
-      // Show success message
       setSuccessMessage('Your video is added.')
       setTimeout(() => {
         navigate('/home', {
@@ -152,266 +150,267 @@ const EnterDetails: React.FC = () => {
     }
   }
 
-  // If no URL, don't render the component
   if (!url) {
     return null
   }
 
   return (
-    <div 
-      style={{ 
-        minWidth: '100vw',
-        minHeight: '100vh',
-        background: '#141414',
-        margin: 0,
-        padding: 0,
+    <div style={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #141414 100%)',
+      color: '#DFD0B8', 
+      fontFamily: 'Lora, serif',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Animated background elements */}
+      <div style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        overflow: 'hidden',
-        zIndex: 0,
-      }}
-    >
-      {/* Background blur effect - bottom right ellipse */}
-      <div
+        top: '10%',
+        right: '10%',
+        width: '300px',
+        height: '300px',
+        background: 'radial-gradient(circle, rgba(223, 208, 184, 0.03) 0%, transparent 70%)',
+        borderRadius: '50%',
+        animation: 'float 6s ease-in-out infinite',
+        zIndex: 0
+      }} />
+      <div style={{
+        position: 'fixed',
+        bottom: '20%',
+        left: '5%',
+        width: '200px',
+        height: '200px',
+        background: 'radial-gradient(circle, rgba(223, 208, 184, 0.02) 0%, transparent 70%)',
+        borderRadius: '50%',
+        animation: 'float 8s ease-in-out infinite reverse',
+        zIndex: 0
+      }} />
+
+      {/* Logo */}
+      <img
+        src="/logo.png"
+        alt="Anv Logo"
         style={{
           position: 'absolute',
-          width: '840px',
-          height: '772px',
-          background: '#7C6B6B',
-          borderRadius: '50%',
-          filter: 'blur(900px)',
-          right: '-700px',
-          bottom: '-900px',
-          zIndex: 1,
-          pointerEvents: 'none',
+          left: '19px',
+          top: '21px',
+          width: 'auto',
+          height: '60px',
+          zIndex: 10,
+          cursor: 'pointer',
         }}
+        onClick={() => navigate('/')}
       />
 
-      {/* Main 1440x1024 container */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '1440px',
-          height: '1024px',
-          maxWidth: '100vw',
-          maxHeight: '100vh',
-          background: 'none',
-          zIndex: 2,
-        }}
-      >
-        {/* Logo */}
-        <img
-          src="/logo.png"
-          alt="Anv Logo"
-          style={{
-            position: 'absolute',
-            left: '19px',
-            top: '21px',
-            width: 'auto',
-            height: '60px',
-            zIndex: 10,
-          }}
-        />
-
-        {/* Top Section - Thumbnail and URL/Cancel */}
+      {/* Main Content Container */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '120px 40px 40px',
+        position: 'relative',
+        zIndex: 1,
+        maxWidth: '1400px',
+        margin: '0 auto',
+      }}>
+        {/* Video Preview Card */}
         <div style={{
-          display: 'flex',
-          gap: '107px',
-          alignItems: 'flex-start',
-          marginTop: '115px',
-          paddingLeft: '108px',
+          width: '100%',
+          maxWidth: '1200px',
+          background: 'rgba(20, 20, 20, 0.8)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          overflow: 'hidden',
+          boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
+          marginBottom: '40px',
+          animation: 'slideUp 0.8s ease-out'
         }}>
-          {/* Thumbnail */}
+          {/* Video Thumbnail */}
           <div style={{
             position: 'relative',
-            background: '#1A1A1A',
-            borderRadius: '50px',
-            overflow: 'hidden',
-            width: '533px',
-            height: '300px',
-            flexShrink: 0,
-            border: '3px solid #848484',
+            width: '100%',
+            aspectRatio: '16/9',
+            overflow: 'hidden'
           }}>
             {url && (
               <img
-                src={`https://img.youtube.com/vi/${getVideoId(url)}/hqdefault.jpg`}
+                src={`https://img.youtube.com/vi/${getVideoId(url)}/maxresdefault.jpg`}
                 alt="YouTube thumbnail"
-                width={533}
-                height={300}
                 style={{
                   width: '100%',
                   height: '100%',
                   objectFit: 'cover',
+                  transition: 'all 0.6s ease',
+                  transform: imageLoaded ? 'scale(1)' : 'scale(1.1)',
+                  filter: imageLoaded ? 'brightness(1)' : 'brightness(0.8)'
                 }}
+                onLoad={() => setImageLoaded(true)}
               />
             )}
-            {/* SVG overlay */}
+            {/* Play Button Overlay */}
             <div style={{
               position: 'absolute',
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              pointerEvents: 'none',
+              width: '80px',
+              height: '80px',
+              background: 'rgba(255, 255, 255, 0.9)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
             }}>
-              <svg width="101" height="102" viewBox="0 0 101 102" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21.0417 13.125L79.9583 51L21.0417 88.875V13.125Z" stroke="#1A1A1A" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 5.14v14l11-7-11-7z" fill="#1A1A1A"/>
               </svg>
             </div>
           </div>
 
-          {/* URL and Cancel Section */}
+          {/* URL Display */}
           <div style={{
-            flex: 1,
+            padding: '30px',
+            borderTop: '1px solid rgba(223, 208, 184, 0.1)',
             display: 'flex',
-            flexDirection: 'column',
-            gap: '24px',
-            marginTop: '90px',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '20px'
           }}>
             <input
               value={url}
               readOnly
               style={{
-                background: '#1a1a1a',
-                borderRadius: '24px',
-                color: 'rgba(223, 208, 184, 0.6)',
+                flex: 1,
+                background: 'rgba(223, 208, 184, 0.05)',
+                borderRadius: '16px',
+                color: 'rgba(223, 208, 184, 0.8)',
                 fontFamily: 'Lora, serif',
-                fontSize: '20px',
-                fontWeight: 700,
-                border: '3px solid rgba(223, 208, 184, 0.6)',
-                width: '650px',
-                height: '50px',
-                textAlign: 'center',
-                padding: '12px 75px',
-                boxShadow: 'inset 0 4px 4px 0 rgba(0, 0, 0, 0.25)',
+                fontSize: '18px',
+                padding: '12px 24px',
+                border: '1px solid rgba(223, 208, 184, 0.2)',
+                outline: 'none',
+                transition: 'all 0.3s ease'
               }}
               aria-label="YouTube URL"
             />
             <button
               onClick={() => navigate('/')}
               style={{
-                width: '200px',
-                height: '65px',
-                borderRadius: '30px',
-                border: '1px solid #AFB774',
-                background: '#075b5e',
-                color: '#dfd0b8',
+                padding: '12px 32px',
+                background: 'rgba(223, 208, 184, 0.1)',
+                borderRadius: '16px',
+                border: '1px solid rgba(223, 208, 184, 0.2)',
+                color: '#DFD0B8',
                 fontFamily: 'Lora, serif',
-                fontWeight: 500,
-                fontSize: '24px',
-                textAlign: 'center',
-                opacity: 0.9,
+                fontSize: '18px',
                 cursor: 'pointer',
-                alignSelf: 'center',
-                marginTop: '24px',
-                display: 'block',
+                transition: 'all 0.3s ease',
+                whiteSpace: 'nowrap'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(223, 208, 184, 0.2)'
+                e.currentTarget.style.transform = 'translateY(-2px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(223, 208, 184, 0.1)'
+                e.currentTarget.style.transform = 'translateY(0)'
               }}
             >
-              cancel
+              Cancel
             </button>
           </div>
         </div>
 
-        {/* Bottom Section - Form */}
+        {/* Form Section */}
         <div style={{
-          position: 'relative',
-          marginTop: '87px',
+          width: '100%',
+          maxWidth: '1200px',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '40px',
+          animation: 'fadeInUp 0.8s ease-out 0.3s both'
         }}>
-          {/* Left Column - Title and Review - positioned to align with thumbnail */}
+          {/* Left Column */}
           <div style={{
-            position: 'absolute',
-            left: '108px', // Same as thumbnail left position
-            top: 0,
-            width: '533px', // Same width as thumbnail for alignment
+            background: 'rgba(20, 20, 20, 0.8)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '24px',
+            padding: '40px',
+            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)'
           }}>
             {/* Title Section */}
-            <div style={{ marginBottom: '88px' }}>
-              <div style={{
+            <div style={{ marginBottom: '40px' }}>
+              <label style={{
+                display: 'block',
                 color: 'rgba(223, 208, 184, 0.6)',
-                fontFamily: 'Lora, serif',
-                fontSize: '30px',
-                fontWeight: 400,
-                marginBottom: '15px',
+                fontSize: '20px',
+                marginBottom: '12px'
               }}>
-                title
-              </div>
+                Title
+              </label>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 readOnly
                 style={{
                   width: '100%',
-                  background: 'none',
-                  border: 'none',
-                  color: 'rgba(223, 208, 184, 1)',
-                  fontFamily: 'Lora, serif',
-                  fontSize: '50px',
-                  fontWeight: 600,
-                  outline: 'none',
-                  padding: 0,
-                  marginLeft: '50px',
+                  background: 'rgba(223, 208, 184, 0.05)',
+                  borderRadius: '16px',
+                  color: '#DFD0B8',
+                  fontSize: '24px',
+                  padding: '16px',
+                  border: '1px solid rgba(223, 208, 184, 0.2)',
+                  outline: 'none'
                 }}
               />
             </div>
 
-            {/* Optional Review */}
+            {/* Review Section */}
             <div>
-              <div style={{
+              <label style={{
+                display: 'block',
                 color: '#DFD0B8',
-                fontFamily: 'Lora, serif',
-                fontSize: '48px',
-                fontWeight: 400,
-                marginBottom: '8px',
+                fontSize: '20px',
+                marginBottom: '12px'
               }}>
-                optional
-              </div>
+                Optional Review
+              </label>
               <div style={{
-                color: '#DFD0B8',
-                fontFamily: 'Lora, serif',
-                fontWeight: 400,
-                fontSize: '30px',
-                opacity: 0.6,
-                lineHeight: '128%',
-                textAlign: 'center',
-                marginBottom: '16px',
+                color: 'rgba(223, 208, 184, 0.6)',
+                fontSize: '16px',
+                marginBottom: '16px'
               }}>
-                why do you think its a great video ?
+                Why do you think it's a great video?
               </div>
-              <div style={{ position: 'relative', width: '440px', height: '120px' }}>
+              <div style={{ position: 'relative' }}>
                 <textarea
                   value={review}
                   onChange={(e) => {
                     if (e.target.value.length <= DESCRIPTION_LIMIT) setReview(e.target.value)
                   }}
                   style={{
-                    width: '440px',
+                    width: '100%',
                     height: '150px',
-                    padding: '16px',
-                    background: '#DFD0B8',
+                    background: 'rgba(223, 208, 184, 0.05)',
                     borderRadius: '16px',
-                    border: 'none',
-                    color: '#141414',
-                    fontFamily: 'Lora, serif',
-                    fontSize: '20px',
-                    fontWeight: 400,
-                    resize: 'none',
+                    color: '#DFD0B8',
+                    fontSize: '16px',
+                    padding: '16px',
+                    border: '1px solid rgba(223, 208, 184, 0.2)',
                     outline: 'none',
-                    marginLeft: '20px',
+                    resize: 'none'
                   }}
                 />
                 <div style={{
                   position: 'absolute',
-                  bottom: -20,
-                  right: 0,
-                  color: 'rgba(20,20,20,0.9)',
-                  fontFamily: 'Lora, serif',
-                  fontSize: 14,
-                  opacity: 0.7,
-                  pointerEvents: 'none',
+                  bottom: '-20px',
+                  right: '0',
+                  color: 'rgba(223, 208, 184, 0.6)',
+                  fontSize: '14px'
                 }}>
                   {review.length}/{DESCRIPTION_LIMIT}
                 </div>
@@ -419,88 +418,81 @@ const EnterDetails: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column - Category, Star, Submit - positioned to align with URL section */}
+          {/* Right Column */}
           <div style={{
-            position: 'absolute',
-            left: '950px', // Position to align with URL section (108px + 533px + 107px gap)
-            top: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '42px',
-            alignItems: 'flex-start',
+            background: 'rgba(20, 20, 20, 0.8)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '24px',
+            padding: '40px',
+            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)'
           }}>
             {/* Category Section */}
-            <div style={{ position: 'relative' }}>
-              <div style={{
-                color: '#DFD0B8',
-                opacity: 0.6,
-                fontFamily: 'Lora, serif',
-                fontSize: '30px',
-                fontWeight: 400,
-                marginBottom: '24px',
+            <div style={{ marginBottom: '40px' }}>
+              <label style={{
+                display: 'block',
+                color: 'rgba(223, 208, 184, 0.6)',
+                fontSize: '20px',
+                marginBottom: '12px'
               }}>
-                category
-              </div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                position: 'relative',
-              }}>
+                Category
+              </label>
+              <div style={{ position: 'relative' }}>
                 <button
                   type="button"
                   onClick={() => setCategoryDropdown((v) => !v)}
                   style={{
-                    padding: '6px 30px',
-                    background: 'rgba(26, 26, 26, 0.6)',
-                    borderRadius: '20px',
-                    border: '1px solid #DFD0B8',
+                    width: '100%',
+                    padding: '16px',
+                    background: 'rgba(223, 208, 184, 0.05)',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(223, 208, 184, 0.2)',
                     color: '#DFD0B8',
-                    fontFamily: 'Lora, serif',
-                    fontSize: '25px',
-                    fontWeight: 600,
-                    textAlign: 'center',             
-                    outline: 'none',
+                    fontSize: '18px',
+                    textAlign: 'left',
                     cursor: 'pointer',
-                    minWidth: '120px',
-                    position: 'relative',
                     display: 'flex',
-                    alignItems: 'center',
-                    marginLeft: '50px',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
                   }}
                 >
-                  {category || 'other'} 
+                  <span>{category || 'Select a category'}</span>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 9l6 6 6-6" stroke="#DFD0B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </button>
                 {categoryDropdown && (
                   <div style={{
                     position: 'absolute',
                     top: '100%',
                     left: 0,
-                    background: '#1A1A1A',
-                    border: '1px solid #DFD0B8',
-                    borderRadius: '20px',
+                    right: 0,
+                    marginTop: '8px',
+                    background: 'rgba(20, 20, 20, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(223, 208, 184, 0.2)',
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
                     zIndex: 100,
-                    minWidth: '240px',
-                    boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '8px',
-                    padding: '8px',
+                    maxHeight: '300px',
+                    overflowY: 'auto'
                   }}>
                     {categories.map(cat => (
                       <div
                         key={cat._id}
                         onClick={() => { setCategory(cat.slug); setCategoryDropdown(false); }}
                         style={{
-                          padding: '8px 16px',
+                          padding: '12px 16px',
                           color: '#DFD0B8',
-                          fontFamily: 'Lora, serif',
-                          fontSize: '25px',
-                          fontWeight: 600,
+                          fontSize: '16px',
                           cursor: 'pointer',
-                          background: category === cat.slug ? 'rgba(223,208,184,0.1)' : 'transparent',
-                          borderRadius: '12px',
-                          textAlign: 'center',
+                          transition: 'all 0.2s ease',
+                          background: category === cat.slug ? 'rgba(223, 208, 184, 0.1)' : 'transparent'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(223, 208, 184, 0.05)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = category === cat.slug ? 'rgba(223, 208, 184, 0.1)' : 'transparent'
                         }}
                       >
                         {cat.name}
@@ -512,19 +504,18 @@ const EnterDetails: React.FC = () => {
             </div>
 
             {/* Star Rating */}
-            <div>
-              <div style={{
+            <div style={{ marginBottom: '40px' }}>
+              <label style={{
+                display: 'block',
                 color: 'rgba(223, 208, 184, 0.6)',
-                fontSize: '30px',
-                fontWeight: 400,
-                marginBottom: '2px',
+                fontSize: '20px',
+                marginBottom: '12px'
               }}>
-                star
-              </div>
+                Rating
+              </label>
               <div style={{
                 display: 'flex',
-                gap: '5px',
-                marginLeft: '50px',
+                gap: '8px'
               }}>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -533,74 +524,119 @@ const EnterDetails: React.FC = () => {
                     style={{
                       background: 'transparent',
                       border: 'none',
-                      color: star <= rating ? '#FFD700' : '#DFD0B8',
-                      fontSize: '40px',
+                      color: star <= rating ? '#FFD700' : 'rgba(223, 208, 184, 0.3)',
+                      fontSize: '32px',
                       cursor: 'pointer',
-                      opacity: star <= rating ? 1 : 0.6,
-                      padding: 0,
+                      transition: 'all 0.2s ease',
+                      transform: star <= rating ? 'scale(1.1)' : 'scale(1)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.2)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = star <= rating ? 'scale(1.1)' : 'scale(1)'
                     }}
                   >
                     ★
                   </button>
                 ))}
               </div>
-              {error && (
-                <div style={{ 
-                  color: '#ff4d4f', 
-                  fontFamily: 'Lora, serif', 
-                  fontSize: 14, 
-                  marginTop: 16,
-                  textAlign: 'center',
-                  opacity: 0.75,  
-                  marginLeft: '50px',
-                }}>
-                  {error}
-                </div>
-              )}
-              {successMessage && (
-                <div style={{ 
-                  color: '#52c41a', 
-                  fontFamily: 'Lora, serif', 
-                  fontSize: 16, 
-                  marginTop: 16,
-                  textAlign: 'center',
-                  opacity: 0.9,  
-                  marginLeft: '50px',
-                  fontWeight: 500,
-                }}>
-                  {successMessage}
-                </div>
-              )}
             </div>
+
+            {/* Error/Success Messages */}
+            {error && (
+              <div style={{ 
+                color: '#ff4d4f',
+                fontSize: '14px',
+                marginBottom: '16px',
+                padding: '12px',
+                background: 'rgba(255, 77, 79, 0.1)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 77, 79, 0.2)'
+              }}>
+                {error}
+              </div>
+            )}
+            {successMessage && (
+              <div style={{ 
+                color: '#52c41a',
+                fontSize: '14px',
+                marginBottom: '16px',
+                padding: '12px',
+                background: 'rgba(82, 196, 26, 0.1)',
+                borderRadius: '12px',
+                border: '1px solid rgba(82, 196, 26, 0.2)'
+              }}>
+                {successMessage}
+              </div>
+            )}
 
             {/* Submit Button */}
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
               style={{
-                width: '200px',
-                height: '65px',
-                borderRadius: '30px',
-                border: '1px solid #afb774',
-                background: '#210f37',
-                color: '#dfd0b8',
-                fontFamily: 'Lora, serif',
-                fontWeight: 500,
-                fontSize: '24px',
-                textAlign: 'center',
-                opacity: isSubmitting ? 0.5 : 0.9,
+                width: '100%',
+                padding: '16px',
+                background: 'linear-gradient(135deg, #DFD0B8 0%, #C9B896 100%)',
+                borderRadius: '16px',
+                border: 'none',
+                color: '#141414',
+                fontSize: '18px',
+                fontWeight: 600,
                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                marginTop: '20px',
-                alignSelf: 'center',
-                display: 'block',
-                marginLeft: '46px',
+                opacity: isSubmitting ? 0.7 : 1,
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (!isSubmitting) {
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.2)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isSubmitting) {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }
               }}
             >
-              {isSubmitting ? 'submitting...' : 'submit'}
+              {isSubmitting ? 'Submitting...' : 'Submit Video'}
             </button>
           </div>
         </div>
       </div>
+
+      <style>
+        {`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+          }
+          
+          @keyframes slideUp {
+            0% {
+              opacity: 0;
+              transform: translateY(60px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          @keyframes fadeInUp {
+            0% {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}
+      </style>
     </div>
   )
 }
