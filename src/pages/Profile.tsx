@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getUserLists } from '../services/listService';
 import { getLatestSubmissionByVideoId, getSubmissionsByUser, getVideoById } from '../services/videoService';
 import { getFollowingUsers } from '../services/userService';
+import EditProfileModal from '../components/EditProfileModal';
 
 // Critique: Keeping all styles inline for now for consistency with the rest of the app. Consider refactoring to CSS-in-JS or modules for maintainability.
 
@@ -22,6 +23,7 @@ const Profile: React.FC = () => {
   const [followingCount, setFollowingCount] = useState<number>(0);
   const [favVideos, setFavVideos] = useState<any[]>([]);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Critique: Fetch all lists, then filter for Favs (isDefault) and Recent Activity (most recent submissions)
   useEffect(() => {
@@ -64,7 +66,9 @@ const Profile: React.FC = () => {
           const recent = await Promise.all(
             sorted.slice(0, 4).map(async (submission: any) => {
               try {
-                const video = await getVideoById(submission.videoId);
+                // Handle both string and object videoIds
+                const videoId = typeof submission.videoId === 'object' ? submission.videoId._id : submission.videoId;
+                const video = await getVideoById(videoId);
                 return { ...video, rating: submission.rating, submissionId: submission._id };
               } catch {
                 return null;
@@ -138,7 +142,12 @@ const Profile: React.FC = () => {
         <div style={{ marginTop: 16 }}>
           <div style={{ fontFamily: 'Alfa Slab One, serif', fontSize: 56, color: '#DFD0B8', fontWeight: 700 }}>{user.name}</div>
           <div style={{ fontSize: 22, color: '#DFD0B8', opacity: 0.7, marginTop: 2 }}>@{user.username}</div>
-          <button style={{ marginTop: 8, marginRight: 16, fontFamily: 'Lora, serif', fontSize: 18, background: '#DFD0B8', color: '#141414', border: 'none', borderRadius: 8, padding: '4px 16px', fontWeight: 700, cursor: 'pointer' }}>edit profile</button>
+          <button 
+            style={{ marginTop: 8, marginRight: 16, fontFamily: 'Lora, serif', fontSize: 18, background: '#DFD0B8', color: '#141414', border: 'none', borderRadius: 8, padding: '4px 16px', fontWeight: 700, cursor: 'pointer' }}
+            onClick={() => setIsEditModalOpen(true)}
+          >
+            edit profile
+          </button>
           {/* Logout button */}
           <button style={{ marginTop: 8, marginRight: 16, fontFamily: 'Lora, serif', fontSize: 18, background: '#AFB774', color: '#141414', border: 'none', borderRadius: 8, padding: '4px 16px', fontWeight: 700, cursor: 'pointer' }}
             onClick={() => { logout(); navigate('/login'); }}>
@@ -221,6 +230,11 @@ const Profile: React.FC = () => {
           )}
         </div>
       </div>
+
+      <EditProfileModal 
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+      />
     </div>
   );
 };
