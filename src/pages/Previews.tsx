@@ -4,6 +4,8 @@ import { getVideoById, getLatestSubmissionByVideoId } from '../services/videoSer
 import { getUserById } from '../services/userService'
 import { getCategoryById } from '../services/categoryService'
 import AddToListModal from '../components/AddToListModal'
+import { getYouTubeThumbnail } from '../utils/youtube'
+import { useAuth } from '../context/AuthContext'
 
 interface LocationState {
   videoId?: string
@@ -13,12 +15,14 @@ const Previews: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const state = location.state as LocationState
+  const { user } = useAuth()
 
   const [video, setVideo] = useState<any>(null)
   const [username, setUsername] = useState<string>('')
   const [category, setCategory] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false)
 
   useEffect(() => {
@@ -71,6 +75,28 @@ const Previews: React.FC = () => {
     // eslint-disable-next-line
   }, [state?.videoId])
 
+  useEffect(() => {
+    const loadThumbnail = async () => {
+      if (!video) return;
+      const videoId = video.youtubeVideoId;
+      if (!videoId) return;
+      try {
+        const url = await getYouTubeThumbnail(videoId);
+        setThumbnailUrl(url);
+      } catch (error) {
+        console.error('Error loading thumbnail:', error);
+        setThumbnailUrl('/logo.png');
+      }
+    };
+    loadThumbnail();
+  }, [video]);
+
+  // Helper to get video thumbnail
+  const getThumbnail = (video: any) => {
+    if (!video) return '/logo.png';
+    return video.thumbnailUrl_youtube || '/logo.png';
+  };
+
   if (loading) {
     return <div style={{ color: '#DFD0B8', fontFamily: 'Lora, serif', fontSize: 32, textAlign: 'center', marginTop: 100 }}>Loading...</div>
   }
@@ -82,7 +108,7 @@ const Previews: React.FC = () => {
   const year = video.uploadDate_youtube ? new Date(video.uploadDate_youtube).getFullYear() : '2025'
 
   return (
-    <div style={{ minHeight: '100vh', background: '#141414', color: '#DFD0B8' }}>
+    <div style={{ minHeight: '100vh', background: '#141414', color: '#DFD0B8', fontFamily: 'Lora, serif' }}>
       {/* Header */}
       {/* Logo */}
       <img
@@ -166,7 +192,7 @@ const Previews: React.FC = () => {
             </svg>
           </button>
           <img
-            src={video.thumbnailUrl_youtube || '/logo.png'}
+            src={getThumbnail(video)}
             alt="Video Thumbnail"
             width={1448}
             height={927}

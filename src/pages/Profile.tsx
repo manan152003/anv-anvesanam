@@ -5,7 +5,6 @@ import { getUserLists } from '../services/listService';
 import { getLatestSubmissionByVideoId, getSubmissionsByUser, getVideoById } from '../services/videoService';
 import { getFollowingUsers } from '../services/userService';
 import EditProfileModal from '../components/EditProfileModal';
-import { getYouTubeThumbnail } from '../utils/youtube';
 
 // Critique: Keeping all styles inline for now for consistency with the rest of the app. Consider refactoring to CSS-in-JS or modules for maintainability.
 

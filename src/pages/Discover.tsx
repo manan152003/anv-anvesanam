@@ -63,6 +63,7 @@ const Discover: React.FC = () => {
   const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [sundayStack, setSundayStack] = useState<Video[]>([]);
+  const sortRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getCategories().then(setCategories).catch(() => setCategories([]));
@@ -237,7 +238,6 @@ const Discover: React.FC = () => {
           transition: 'transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s',
         }}
       >
-        {/* Title */}
         <div
           style={{
             fontFamily: 'Bellefair, serif',
@@ -259,9 +259,10 @@ const Discover: React.FC = () => {
     );
   };
 
-  // Video Card Component
+  // Video Card
   const VideoCard = ({ video, cardWidth = 340, cardHeight = 210, disableHover = false }: { video: Video, cardWidth?: number, cardHeight?: number, disableHover?: boolean }) => {
     const [isHovered, setIsHovered] = useState(false);
+    const hasDescription = Boolean(video.bestDescription);
 
     return (
       <div
@@ -537,6 +538,87 @@ const Discover: React.FC = () => {
     );
   };
 
+  // Close sort dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(event.target as Node)) {
+        setSortOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Sort Dropdown Component
+  const SortDropdown = () => (
+    <div ref={sortRef} style={{ position: 'relative' }}>
+      <div 
+        style={{ 
+          fontSize: 20, 
+          fontWeight: 700, 
+          cursor: 'pointer', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 8,
+          padding: '8px 16px',
+          borderRadius: 12,
+          background: sortOpen ? '#2A2A2A' : 'transparent',
+          transition: 'all 0.2s ease'
+        }} 
+        onClick={() => setSortOpen(s => !s)}
+      >
+        SORT BY
+        <span style={{ 
+          transform: sortOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          transition: 'transform 0.2s ease'
+        }}>
+          ▼
+        </span>
+      </div>
+      {sortOpen && (
+        <div style={{ 
+          position: 'absolute', 
+          top: '100%', 
+          left: 0,
+          marginTop: 8,
+          background: '#1A1A1A', 
+          border: '1px solid #DFD0B8', 
+          borderRadius: 12, 
+          zIndex: 20, 
+          padding: 8,
+          minWidth: 280,
+          boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
+          backdropFilter: 'blur(10px)'
+        }}>
+          {SORT_OPTIONS.map(opt => (
+            <div 
+              key={opt.value} 
+              style={{ 
+                padding: '12px 16px', 
+                cursor: 'pointer', 
+                color: sort === opt.value ? '#FFFFFF' : '#DFD0B8', 
+                fontWeight: sort === opt.value ? 700 : 400,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                borderRadius: 8,
+                transition: 'all 0.2s ease',
+                background: sort === opt.value ? '#2A2A2A' : 'transparent'
+              }} 
+              onClick={() => { 
+                setSort(opt.value); 
+                setSortOpen(false); 
+              }}
+            >
+              {opt.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   // Main Render
   return (
     <div style={{ minHeight: '100vh', background: '#141414', color: '#DFD0B8', fontFamily: 'Lora, serif' }}>
@@ -560,19 +642,10 @@ const Discover: React.FC = () => {
           <span key={t.value} style={{ opacity: tab === t.value ? 0.6 : 1, cursor: 'pointer' }} onClick={() => setTab(t.value)}>{t.label}</span>
         ))}
       </div>
-      {/* Filter/Sort Row (only for default tab) */}
+      {/* Sort Row (only for default tab) */}
       {tab === 'default' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 32, marginTop: 32, marginLeft: 32 }}>
-          <div style={{ fontSize: 20, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => setSortOpen(s => !s)}>
-            SORT BY
-            {sortOpen && (
-              <div style={{ position: 'absolute', background: '#1A1A1A', border: '1px solid #DFD0B8', borderRadius: 12, marginTop: 40, zIndex: 20, padding: 16 }}>
-                {SORT_OPTIONS.map(opt => (
-                  <div key={opt.value} style={{ padding: 8, cursor: 'pointer', color: sort === opt.value ? '#FFFFFF' : '#DFD0B8', fontWeight: sort === opt.value ? 700 : 400 }} onClick={() => { setSort(opt.value); setSortOpen(false); }}>{opt.label}</div>
-                ))}
-              </div>
-            )}
-          </div>
+          <SortDropdown />
         </div>
       )}
       {/* Main Content */}

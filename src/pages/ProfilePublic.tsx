@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserLists, getListsByUser } from '../services/listService';
-import { getSubmissionsByUser, getVideoById } from '../services/videoService';
+import { getLatestSubmissionByVideoId, getSubmissionsByUser, getVideoById } from '../services/videoService';
 import { getFollowingUsers, getUserByUsername } from '../services/userService';
 import { getYouTubeThumbnail } from '../utils/youtube';
 
