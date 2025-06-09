@@ -216,46 +216,6 @@ const Previews: React.FC = () => {
         zIndex: 0
       }} />
 
-      {/* Header */}
-      <img
-        src="/logo.png"
-        alt="Anv Logo"
-        style={{
-          position: 'absolute',
-          left: '19px',
-          top: '21px',
-          width: 'auto',
-          height: '60px',
-          zIndex: 10,
-          cursor: 'pointer',
-        }}
-        onClick={() => navigate('/')}
-      />
-      <div style={{
-        width: '100%',
-        background: '#141414',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        height: '97px',
-        position: 'relative',
-        zIndex: 5
-      }}>
-        <div style={{
-          display: 'flex',
-          gap: '15px',
-          fontFamily: 'Lora, serif',
-          fontSize: '24px',
-          fontWeight: 700,
-          marginLeft: '983px',
-        }}>
-          <span style={{ opacity: 0.6, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/discover')}>DISCOVER</span>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/profile')}>PROFILE</span>
-          <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
-        </div>
-      </div>
-
       {/* Main Content Container */}
       <div style={{
         display: 'flex',

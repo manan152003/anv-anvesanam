@@ -43,5 +43,5 @@ export const removeVideoFromList = async (listId: string, videoId: string): Prom
 };
 
 export const getListsByUser = async (userId: string): Promise<List[]> => {
-  return apiRequest<List[]>(`/lists?userId=${userId}`);
+  return apiRequest<List[]>(`/lists?userId=${userId}`, { requiresAuth: false });
 }; 

@@ -64,25 +64,6 @@ const Login = () => {
         zIndex: 0
       }} />
 
-      {/* Logo */}
-      <img
-        src="/logo.png"
-        alt="Anv Logo"
-        style={{
-          position: 'absolute',
-          left: '19px',
-          top: '21px',
-          width: 'auto',
-          height: '60px',
-          zIndex: 10,
-          cursor: 'pointer',
-          transition: 'transform 0.3s ease'
-        }}
-        onClick={() => navigate('/')}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-      />
-
       <div style={{
         width: '100%',
         maxWidth: '500px',

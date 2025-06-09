@@ -151,11 +151,11 @@ const Profile: React.FC = () => {
         } else {
           setFavVideos([]);
         }
-        // Recent Activity: fetch video details for up to 4 most recent submissions
+        // Recent Activity: fetch video details for all submissions
         if (submissionsData && submissionsData.length > 0) {
           const sorted = submissionsData.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           const recent = await Promise.all(
-            sorted.slice(0, 4).map(async (submission: any) => {
+            sorted.map(async (submission: any) => {
               try {
                 // Handle both string and object videoIds
                 const videoId = typeof submission.videoId === 'object' ? submission.videoId._id : submission.videoId;
@@ -355,51 +355,6 @@ const Profile: React.FC = () => {
         pointerEvents: 'none',
         zIndex: 0
       }} />
-
-      {/* Header/Nav - keeping unchanged */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <img
-          src="/logo.png"
-          alt="Anv Logo"
-          style={{
-            position: 'absolute',
-            left: 19,
-            top: 21,
-            width: 'auto',
-            height: 60,
-            zIndex: 10,
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease',
-          }}
-          onClick={() => navigate('/')}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-        />
-        <div style={{
-          width: '100%',
-          background: 'rgba(20, 20, 20, 0.8)',
-          backdropFilter: 'blur(20px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: 97,
-          borderBottom: '1px solid rgba(223, 208, 184, 0.1)'
-        }}>
-          <div style={{
-            display: 'flex',
-            gap: 15,
-            fontFamily: 'Lora, serif',
-            fontSize: 24,
-            fontWeight: 700,
-            marginLeft: 983
-          }}>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/discover')}>DISCOVER</span>
-            <span style={{ opacity: 0.6, cursor: 'pointer' }} onClick={() => navigate('/profile')}>PROFILE</span>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
-          </div>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
@@ -651,7 +606,16 @@ const Profile: React.FC = () => {
           }}>
             Recent Activity
           </div>
-          <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+          <div style={{
+            display: 'flex',
+            gap: '32px',
+            flexWrap: 'nowrap',
+            overflowX: 'auto',
+            whiteSpace: 'nowrap',
+            paddingBottom: 8,
+            scrollbarColor: '#DFD0B8 #1a1a1a',
+            scrollbarWidth: 'thin'
+          }}>
             {recentActivities.length === 0 ? (
               <div style={{
                 padding: '40px',
@@ -667,7 +631,9 @@ const Profile: React.FC = () => {
               </div>
             ) : (
               recentActivities.map((video: any, idx: number) => (
-                <VideoCard key={video._id || idx} video={video} index={idx} />
+                <div key={video._id || idx} style={{ display: 'inline-block' }}>
+                  <VideoCard video={video} index={idx} />
+                </div>
               ))
             )}
           </div>

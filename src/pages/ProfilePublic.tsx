@@ -76,11 +76,11 @@ const ProfilePublic: React.FC = () => {
           setFavVideos([]);
         }
 
-        // Recent Activity: fetch video details for up to 4 most recent submissions
+        // Recent Activity: fetch video details for all submissions
         if (submissionsData && submissionsData.length > 0) {
           const sorted = submissionsData.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           const recent = await Promise.all(
-            sorted.slice(0, 4).map(async (submission: any) => {
+            sorted.map(async (submission: any) => {
               try {
                 // Handle both string and object videoIds
                 const videoId = typeof submission.videoId === 'object' ? submission.videoId._id : submission.videoId;
@@ -197,7 +197,7 @@ const ProfilePublic: React.FC = () => {
     };
   }, []);
 
-  // Modern Video Card Component
+  // Modern Video Card Component (copied and critiqued from Profile.tsx)
   const VideoCard = ({ video, index }: { video: any, index: number }) => (
     <div
       className="video-card"
@@ -343,147 +343,362 @@ const ProfilePublic: React.FC = () => {
         pointerEvents: 'none',
         zIndex: 0
       }} />
-      {/* Header/Nav - keeping unchanged */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <img
-          src="/logo.png"
-          alt="Anv Logo"
-          style={{
-            position: 'absolute',
-            left: 19,
-            top: 21,
-            width: 'auto',
-            height: 60,
-            zIndex: 10,
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease',
-          }}
-          onClick={() => navigate('/')}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-        />
-        <div style={{
-          width: '100%',
-          background: 'rgba(20, 20, 20, 0.8)',
-          backdropFilter: 'blur(20px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: 97,
-          borderBottom: '1px solid rgba(223, 208, 184, 0.1)'
-        }}>
-          <div style={{
-            display: 'flex',
-            gap: 15,
-            fontFamily: 'Lora, serif',
-            fontSize: 24,
-            fontWeight: 700,
-            marginLeft: 983
-          }}>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/discover')}>DISCOVER</span>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/profile')}>PROFILE</span>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
-          </div>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
-      {/* Profile Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 32, marginTop: 48, marginLeft: 80 }}>
-        {/* Avatar */}
-        <div style={{ width: 160, height: 160, borderRadius: '50%', overflow: 'hidden', background: '#1A1A1A', border: '4px solid #DFD0B8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img src={profileUser.avatarUrl || '/logo.png'} alt="avatar" style={{ width: 140, height: 140, borderRadius: '50%' }} />
+        {/* Profile Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '40px',
+          marginTop: '60px',
+          marginLeft: '80px',
+          animation: 'slideInLeft 0.8s ease-out'
+        }}>
+          {/* Avatar */}
+          <div style={{
+            width: '160px',
+            height: '160px',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            background: 'rgba(26, 26, 26, 0.8)',
+            backdropFilter: 'blur(10px)',
+            border: '4px solid rgba(223, 208, 184, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)',
+            transition: 'all 0.3s ease'
+          }}
+          >
+            <img
+              src={profileUser.avatarUrl || '/logo.png'}
+              alt="avatar"
+              style={{
+                width: '140px',
+                height: '140px',
+                borderRadius: '50%',
+                objectFit: 'cover'
+              }}
+            />
+          </div>
+
+          {/* User Info */}
+          <div style={{ marginTop: '16px', flex: 1 }}>
+            <div style={{
+              fontFamily: 'Bellefair, serif',
+              fontSize: '56px',
+              color: '#DFD0B8',
+              fontWeight: 700,
+              marginBottom: '8px',
+              textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+            }}>
+              {profileUser.name}
+            </div>
+            <div style={{
+              fontSize: '22px',
+              color: 'rgba(223, 208, 184, 0.7)',
+              marginBottom: '20px'
+            }}>
+              @{profileUser.username}
+            </div>
+            {/* Show follow/unfollow if not self */}
+            {currentUser && currentUser.username !== profileUser.username && (
+              isFollowing ? (
+                <button
+                  style={{
+                    fontFamily: 'Lora, serif',
+                    fontSize: '16px',
+                    background: 'rgba(223, 208, 184, 0.15)',
+                    backdropFilter: 'blur(10px)',
+                    color: '#DFD0B8',
+                    border: '1px solid rgba(223, 208, 184, 0.3)',
+                    borderRadius: '12px',
+                    padding: '12px 24px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    letterSpacing: '0.5px',
+                    marginBottom: '16px',
+                    marginRight: '16px'
+                  }}
+                  onClick={handleUnfollow}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = 'rgba(223, 208, 184, 0.25)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'rgba(223, 208, 184, 0.15)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  Unfollow
+                </button>
+              ) : (
+                <button
+                  style={{
+                    fontFamily: 'Lora, serif',
+                    fontSize: '16px',
+                    background: 'linear-gradient(135deg, #DFD0B8 0%, #C9B896 100%)',
+                    color: '#141414',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '12px 24px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    letterSpacing: '0.5px',
+                    marginBottom: '16px',
+                    marginRight: '16px'
+                  }}
+                  onClick={handleFollow}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  Follow
+                </button>
+              )
+            )}
+            <div style={{
+              fontSize: '18px',
+              color: 'rgba(223, 208, 184, 0.9)',
+              marginBottom: '8px',
+              lineHeight: 1.5
+            }}>
+              {profileUser.bio}
+            </div>
+            <div style={{
+              fontSize: '16px',
+              color: 'rgba(223, 208, 184, 0.6)'
+            }}>
+              Member since {new Date(profileUser.createdAt).getFullYear()}
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div style={{
+            display: 'flex',
+            gap: '32px',
+            marginTop: '24px',
+            animation: 'fadeInUp 0.8s ease-out 0.3s both'
+          }}>
+            {[
+              { label: 'Videos Added', value: submissionCount },
+              { label: 'Lists', value: listCount },
+              { label: 'Followers', value: followersCount },
+              { label: 'Following', value: followingCount }
+            ].map((stat, index) => (
+              <div
+                key={stat.label}
+                className="stat-card"
+                style={{
+                  textAlign: 'center',
+                  padding: '24px 20px',
+                  background: 'rgba(223, 208, 184, 0.05)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(223, 208, 184, 0.1)',
+                  minWidth: '120px',
+                  cursor: 'pointer'
+                }}
+              >
+                <div style={{
+                  fontSize: '36px',
+                  fontWeight: 700,
+                  color: '#DFD0B8',
+                  marginBottom: '8px',
+                  fontFamily: 'Bellefair, serif'
+                }}>
+                  {stat.value}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: 'rgba(223, 208, 184, 0.7)',
+                  fontWeight: 500,
+                  letterSpacing: '0.5px'
+                }}>
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        {/* User Info */}
-        <div style={{ marginTop: 16 }}>
-          <div style={{ fontFamily: 'Alfa Slab One, serif', fontSize: 56, color: '#DFD0B8', fontWeight: 700 }}>{profileUser.name}</div>
-          <div style={{ fontSize: 22, color: '#DFD0B8', opacity: 0.7, marginTop: 2 }}>@{profileUser.username}</div>
-          {/* Show follow/unfollow if not self */}
-          {currentUser && currentUser.username !== profileUser.username && (
-            isFollowing ? (
-              <button style={{ marginTop: 8, marginRight: 16, fontFamily: 'Lora, serif', fontSize: 18, background: '#DFD0B8', color: '#141414', border: 'none', borderRadius: 8, padding: '4px 16px', fontWeight: 700, cursor: 'pointer' }} onClick={handleUnfollow}>Unfollow</button>
+
+        {/* Favs Section */}
+        <div style={{
+          marginTop: '80px',
+          marginLeft: '48px',
+          marginRight: '48px',
+          animation: 'fadeInUp 0.8s ease-out 0.5s both'
+        }}>
+          <div style={{
+            fontFamily: 'Bellefair, serif',
+            fontSize: '40px',
+            fontWeight: 700,
+            color: '#DFD0B8',
+            marginBottom: '32px',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+          }}>
+            Favs
+          </div>
+          <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+            {favVideos.length === 0 ? (
+              <div style={{
+                padding: '40px',
+                background: 'rgba(175, 183, 116, 0.05)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '16px',
+                border: '1px solid rgba(175, 183, 116, 0.1)',
+                color: 'rgba(175, 183, 116, 0.8)',
+                fontFamily: 'Lora, serif',
+                fontSize: '18px'
+              }}>
+                No favorites yet. Start adding videos to see them here!
+              </div>
             ) : (
-              <button style={{ marginTop: 8, marginRight: 16, fontFamily: 'Lora, serif', fontSize: 18, background: '#DFD0B8', color: '#141414', border: 'none', borderRadius: 8, padding: '4px 16px', fontWeight: 700, cursor: 'pointer' }} onClick={handleFollow}>Follow</button>
-            )
-          )}
-          {/* Share button placeholder */}
-          <span style={{ display: 'inline-block', width: 32, height: 32, borderRadius: '50%', background: '#DFD0B8', marginLeft: 8, verticalAlign: 'middle' }} />
-          <span style={{ marginLeft: 8, fontSize: 16, color: '#DFD0B8', opacity: 0.7 }}>share button</span>
-          <div style={{ fontSize: 18, color: '#DFD0B8', marginTop: 12 }}>{profileUser.bio}</div>
-          <div style={{ fontSize: 16, color: '#DFD0B8', opacity: 0.7, marginTop: 4 }}>Member since {new Date(profileUser.createdAt).getFullYear()}</div>
-        </div>
-        {/* Stats */}
-        <div style={{ display: 'flex', gap: 48, marginLeft: 120, marginTop: 24 }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 48, fontWeight: 700, color: '#DFD0B8' }}>{submissionCount}</div>
-            <div style={{ fontSize: 20, color: '#DFD0B8', opacity: 0.8 }}>Videos Added</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 48, fontWeight: 700, color: '#DFD0B8' }}>{listCount}</div>
-            <div style={{ fontSize: 20, color: '#DFD0B8', opacity: 0.8 }}>Lists</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 48, fontWeight: 700, color: '#DFD0B8' }}>{followersCount}</div>
-            <div style={{ fontSize: 20, color: '#DFD0B8', opacity: 0.8 }}>Followers</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 48, fontWeight: 700, color: '#DFD0B8' }}>{followingCount}</div>
-            <div style={{ fontSize: 20, color: '#DFD0B8', opacity: 0.8 }}>Following</div>
+              favVideos.map((video: any, idx: number) => (
+                <VideoCard key={video._id || idx} video={video} index={idx} />
+              ))
+            )}
           </div>
         </div>
-      </div>
-      {/* Favs */}
-      <div style={{ marginTop: 64, marginLeft: 48, marginRight: 48 }}>
-        <div style={{ fontFamily: 'Lora, serif', fontSize: 40, fontWeight: 700, color: '#DFD0B8', marginBottom: 16 }}>Favs</div>
-        <div style={{ display: 'flex', gap: 32 }}>
-          {favVideos.length === 0 ? (
-            <div style={{ color: '#AFB774' }}>No favorites yet.</div>
-          ) : (
-            favVideos.map((video: any, idx: number) => (
-              <div key={video._id || idx} style={{ width: 320, height: 180, borderRadius: 32, overflow: 'hidden', background: '#1A1A1A', border: '3px solid #848484', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} 
-              onClick={e => {
-                navigate('/home', { state: { videoId: video._id } });
+
+        {/* Recent Activity Section */}
+        <div style={{
+          marginTop: '64px',
+          marginLeft: '48px',
+          marginRight: '48px',
+          animation: 'fadeInUp 0.8s ease-out 0.7s both'
+        }}>
+          <div style={{
+            fontFamily: 'Bellefair, serif',
+            fontSize: '40px',
+            fontWeight: 700,
+            color: '#DFD0B8',
+            marginBottom: '32px',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+          }}>
+            Recent Activity
+          </div>
+          <div style={{
+            display: 'flex',
+            gap: '32px',
+            flexWrap: 'nowrap',
+            overflowX: 'auto',
+            whiteSpace: 'nowrap',
+            paddingBottom: 8,
+            scrollbarColor: '#DFD0B8 #1a1a1a',
+            scrollbarWidth: 'thin'
+          }}>
+            {recentActivities.length === 0 ? (
+              <div style={{
+                padding: '40px',
+                background: 'rgba(175, 183, 116, 0.05)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '16px',
+                border: '1px solid rgba(175, 183, 116, 0.1)',
+                color: 'rgba(175, 183, 116, 0.8)',
+                fontFamily: 'Lora, serif',
+                fontSize: '18px'
               }}>
-                <img src={getThumbnail(video)} alt={video.title_youtube || video.title || 'Untitled'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 32 }} />
+                No recent activity. Start exploring and rating videos!
               </div>
-            ))
-          )}
+            ) : (
+              recentActivities.map((video: any, idx: number) => (
+                <div key={video._id || idx} style={{ display: 'inline-block' }}>
+                  <VideoCard video={video} index={idx} />
+                </div>
+              ))
+            )}
+          </div>
         </div>
-      </div>
-      {/* Recent Activity */}
-      <div style={{ marginTop: 48, marginLeft: 48, marginRight: 48 }}>
-        <div style={{ fontFamily: 'Lora, serif', fontSize: 40, fontWeight: 700, color: '#DFD0B8', marginBottom: 16 }}>Recent Activity</div>
-        <div style={{ display: 'flex', gap: 32 }}>
-          {recentActivities.length === 0 ? (
-            <div style={{ color: '#AFB774' }}>No recent activity.</div>
-          ) : (
-            recentActivities.map((video: any, idx: number) => (
-              <div key={video._id || idx} style={{ width: 320, height: 180, borderRadius: 32, overflow: 'hidden', background: '#1A1A1A', border: '3px solid #848484', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer' }} onClick={e => {
-                navigate('/home', { state: { videoId: video._id } });
+
+        {/* Following Section */}
+        <div style={{
+          marginTop: '64px',
+          marginLeft: '48px',
+          marginRight: '48px',
+          marginBottom: '80px',
+          animation: 'fadeInUp 0.8s ease-out 0.9s both'
+        }}>
+          <div style={{
+            fontFamily: 'Bellefair, serif',
+            fontSize: '40px',
+            fontWeight: 700,
+            color: '#DFD0B8',
+            marginBottom: '32px',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+          }}>
+            Following
+          </div>
+          <div style={{
+            display: 'flex',
+            gap: '24px',
+            flexWrap: 'wrap',
+            maxWidth: '1200px'
+          }}>
+            {followingUsers.length === 0 ? (
+              <div style={{
+                padding: '40px',
+                background: 'rgba(175, 183, 116, 0.05)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '16px',
+                border: '1px solid rgba(175, 183, 116, 0.1)',
+                color: 'rgba(175, 183, 116, 0.8)',
+                fontFamily: 'Lora, serif',
+                fontSize: '18px'
               }}>
-                <img src={getThumbnail(video)} alt={video.title_youtube || video.title || 'Untitled'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 32 }} />
+                Not following anyone yet. Discover and follow interesting people!
               </div>
-            ))
-          )}
+            ) : (
+              followingUsers.map((f, idx) => (
+                <div
+                  key={f._id || idx}
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    background: 'rgba(223, 208, 184, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(175, 183, 116, 0.3)',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                    animation: `fadeInUp 0.6s ease-out ${idx * 0.1}s both`
+                  }}
+                  onClick={() => navigate(`/profile/${f.username}`)}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.4)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
+                  }}
+                >
+                  <img
+                    src={f.avatarUrl || '/logo.png'}
+                    alt={f.username || 'user'}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                </div>
+              ))
+            )}
+          </div>
         </div>
-      </div>
-      {/* Following */}
-      <div style={{ marginTop: 48, marginLeft: 48, marginRight: 48, marginBottom: 64 }}>
-        <div style={{ fontFamily: 'Lora, serif', fontSize: 40, fontWeight: 700, color: '#DFD0B8', marginBottom: 16 }}>Following</div>
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', maxWidth: 1200 }}>
-          {followingUsers.length === 0 ? (
-            <div style={{ color: '#AFB774' }}>Not following anyone yet.</div>
-          ) : (
-            followingUsers.map((f, idx) => (
-              <div key={f._id || idx} style={{ width: 56, height: 56, borderRadius: '50%', background: '#DFD0B8', opacity: 0.9, display: 'inline-block', margin: 8, overflow: 'hidden', border: '2px solid #AFB774', cursor: 'pointer' }} onClick={() => navigate(`/profile/${f.username}`)}>
-                <img src={f.avatarUrl || '/logo.png'} alt={f.username || 'user'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-              </div>
-            ))
-          )}
-        </div>
-      </div>
       </div>
     </div>
   );

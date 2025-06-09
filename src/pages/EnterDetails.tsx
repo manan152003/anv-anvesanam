@@ -187,22 +187,6 @@ const EnterDetails: React.FC = () => {
         zIndex: 0
       }} />
 
-      {/* Logo */}
-      <img
-        src="/logo.png"
-        alt="Anv Logo"
-        style={{
-          position: 'absolute',
-          left: '19px',
-          top: '21px',
-          width: 'auto',
-          height: '60px',
-          zIndex: 10,
-          cursor: 'pointer',
-        }}
-        onClick={() => navigate('/')}
-      />
-
       {/* Main Content Container */}
       <div style={{
         display: 'flex',

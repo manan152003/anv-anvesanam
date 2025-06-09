@@ -113,52 +113,6 @@ const About: React.FC = () => {
         pointerEvents: 'none',
         zIndex: 0
       }} />
-      {/* Header/Nav - keeping unchanged */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <img
-          src="/logo.png"
-          alt="Anv Logo"
-          style={{
-            position: 'absolute',
-            left: 19,
-            top: 21,
-            width: 'auto',
-            height: 60,
-            zIndex: 10,
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease',
-          }}
-          onClick={() => navigate('/')}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-        />
-        <div style={{
-          width: '100%',
-          background: 'rgba(20, 20, 20, 0.8)',
-          backdropFilter: 'blur(20px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          height: 97,
-          borderBottom: '1px solid rgba(223, 208, 184, 0.1)',
-          position: 'relative',
-          zIndex: 10
-        }}>
-          <div style={{
-            display: 'flex',
-            gap: 15,
-            fontFamily: 'Lora, serif',
-            fontSize: 24,
-            fontWeight: 700,
-            marginRight: 80
-          }}>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/discover')}>DISCOVER</span>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/profile')}>PROFILE</span>
-            <span style={{ opacity: 0.6, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
-          </div>
-        </div>
-      </div>
 
       {/* Main Content */}
       <main style={{

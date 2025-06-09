@@ -40,7 +40,7 @@ const TABS = [
 ];
 
 const SORT_OPTIONS = [
-  { label: 'POPULARITY', value: 'popularity' },
+  { label: 'DEFAULT', value: 'default' },
   { label: 'NEWEST', value: 'newest' },
   { label: 'RATING (HIGH TO LOW)', value: 'rating_desc' },
   { label: 'RATING (LOW TO HIGH)', value: 'rating_asc' },
@@ -50,7 +50,7 @@ const Discover: React.FC = () => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [sort, setSort] = useState<string>('popularity');
+  const [sort, setSort] = useState<string>('default');
   const [tab, setTab] = useState<string>('default');
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
@@ -260,7 +260,7 @@ const Discover: React.FC = () => {
   };
 
   // Video Card
-  const VideoCard = ({ video, cardWidth = 480, cardHeight = 270, disableHover = false }: { video: Video, cardWidth?: number, cardHeight?: number, disableHover?: boolean }) => {
+  const VideoCard = ({ video, cardWidth = 432, cardHeight = 243, disableHover = false }: { video: Video, cardWidth?: number, cardHeight?: number, disableHover?: boolean }) => {
     const [isHovered, setIsHovered] = useState(false);
     const hasDescription = Boolean(video.bestDescription);
 
@@ -799,51 +799,6 @@ const Discover: React.FC = () => {
         pointerEvents: 'none',
         zIndex: 0
       }} />
-
-      {/* Header/Nav - keeping unchanged as requested */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <img
-          src="/logo.png"
-          alt="Anv Logo"
-          style={{
-            position: 'absolute',
-            left: 19,
-            top: 21,
-            width: 'auto',
-            height: 60,
-            zIndex: 10,
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease',
-          }}
-          onClick={() => navigate('/')}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-        />
-        <div style={{
-          width: '100%',
-          background: 'rgba(20, 20, 20, 0.8)',
-          backdropFilter: 'blur(20px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: 97,
-          borderBottom: '1px solid rgba(223, 208, 184, 0.1)'
-        }}>
-          <div style={{
-            display: 'flex',
-            gap: 15,
-            fontFamily: 'Lora, serif',
-            fontSize: 24,
-            fontWeight: 700,
-            marginLeft: 983
-          }}>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/home')}>HOME</span>
-            <span style={{ opacity: 0.6, cursor: 'pointer' }} onClick={() => { setTab('default'); }}>DISCOVER</span>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/profile')}>PROFILE</span>
-            <span style={{ opacity: 1, cursor: 'pointer' }} onClick={() => navigate('/about')}>ABOUT</span>
-          </div>
-        </div>
-      </div>
 
       {/* Tabs with modern styling */}
       <div style={{
