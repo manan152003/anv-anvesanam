@@ -42,7 +42,7 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isOpen, onClose, onSubmit
         background: 'rgba(20, 20, 20, 0.95)',
         borderRadius: 24,
         padding: 40,
-        minWidth: 400,
+        minWidth: 600,
         boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
         position: 'relative',
         display: 'flex',
@@ -66,7 +66,7 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isOpen, onClose, onSubmit
           ×
         </button>
         <h2 style={{
-          fontFamily: 'Alfa Slab One, serif',
+          fontFamily: 'Lora, serif',
           fontSize: 32,
           color: '#DFD0B8',
           marginBottom: 24,
