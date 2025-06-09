@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
@@ -22,9 +22,34 @@ const Signup = () => {
   const [showCompleteProfile, setShowCompleteProfile] = useState(false);
   const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [googleInfo, setGoogleInfo] = useState<{ email: string; name: string; picture: string } | null>(null);
+  const [usernameAvailable, setUsernameAvailable] = useState<null | boolean>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const usernameCheckTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Get the redirect path and URL from location state
   const { from, url } = (location.state as LocationState) || { from: '/enter-details' };
+
+  // Username check function
+  const checkUsername = async (username: string) => {
+    if (!username || username.length < 3) {
+      setUsernameAvailable(null);
+      return;
+    }
+    setCheckingUsername(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${apiUrl}/auth/check-username`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
+      const data = await response.json();
+      setUsernameAvailable(data.available);
+    } catch {
+      setUsernameAvailable(null);
+    }
+    setCheckingUsername(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,7 +257,13 @@ const Signup = () => {
                 type="text"
                 required
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setUsernameAvailable(null);
+                  if (usernameCheckTimeout.current) clearTimeout(usernameCheckTimeout.current);
+                  const value = e.target.value;
+                  usernameCheckTimeout.current = setTimeout(() => checkUsername(value), 500);
+                }}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
@@ -254,6 +285,11 @@ const Signup = () => {
                 }}
                 placeholder="Choose a unique username"
               />
+              {username && (
+                <div style={{ marginTop: 6, fontSize: 14, color: usernameAvailable === null ? '#AFB774' : usernameAvailable ? 'green' : 'red' }}>
+                  {checkingUsername ? 'Checking username...' : usernameAvailable === null ? '' : usernameAvailable ? 'Username is available!' : 'Username is taken.'}
+                </div>
+              )}
               <div style={{
                 marginTop: '10px',
                 padding: '10px 14px',
@@ -490,9 +526,45 @@ function CompleteProfileForm({ onSubmit, error }: { onSubmit: (username: string,
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [usernameAvailable, setUsernameAvailable] = useState<null | boolean>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const usernameCheckTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const checkUsername = async (username: string) => {
+    if (!username || username.length < 3) {
+      setUsernameAvailable(null);
+      return;
+    }
+    setCheckingUsername(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${apiUrl}/auth/check-username`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
+      const data = await response.json();
+      setUsernameAvailable(data.available);
+    } catch {
+      setUsernameAvailable(null);
+    }
+    setCheckingUsername(false);
+  };
+
   return (
     <form onSubmit={e => { e.preventDefault(); onSubmit(username, password, confirmPassword); }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <input type="text" placeholder="Choose a username" value={username} onChange={e => setUsername(e.target.value)} required style={{ padding: 12, borderRadius: 8, border: '1px solid #AFB774', fontSize: 16 }} />
+      <input type="text" placeholder="Choose a username" value={username} onChange={e => {
+        setUsername(e.target.value);
+        setUsernameAvailable(null);
+        if (usernameCheckTimeout.current) clearTimeout(usernameCheckTimeout.current);
+        const value = e.target.value;
+        usernameCheckTimeout.current = setTimeout(() => checkUsername(value), 500);
+      }} required style={{ padding: 12, borderRadius: 8, border: '1px solid #AFB774', fontSize: 16 }} />
+      {username && (
+        <div style={{ marginTop: 6, fontSize: 14, color: usernameAvailable === null ? '#AFB774' : usernameAvailable ? 'green' : 'red' }}>
+          {checkingUsername ? 'Checking username...' : usernameAvailable === null ? '' : usernameAvailable ? 'Username is available!' : 'Username is taken.'}
+        </div>
+      )}
       <input type="password" placeholder="Set a password" value={password} onChange={e => setPassword(e.target.value)} required style={{ padding: 12, borderRadius: 8, border: '1px solid #AFB774', fontSize: 16 }} />
       <input type="password" placeholder="Confirm password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required style={{ padding: 12, borderRadius: 8, border: '1px solid #AFB774', fontSize: 16 }} />
       {error && <div style={{ color: '#ff6b6b', marginBottom: 8 }}>{error}</div>}
