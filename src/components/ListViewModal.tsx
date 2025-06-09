@@ -171,21 +171,21 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
 
                     const title =
                       videoObj?.title_youtube ||
-                      (typeof item.videoId === 'object' && item.videoId.title) ||
+                      (typeof item.videoId === 'object' && item.videoId.title_youtube) ||
                       (typeof item.videoId === 'string' ? 'Loading...' : '');
 
                     return (
                       <li key={typeof item.videoId === 'string' ? item.videoId : item.videoId._id} style={{ display: 'flex', alignItems: 'center', marginBottom: 16, background: '#141414', borderRadius: 8, padding: 12 }}>
-                        <div className="w-32 h-20 bg-gray-100 rounded overflow-hidden">
-                          {item.videoId && thumbnailUrls[item.videoId._id] ? (
+                        <div style={{ width: 128, height: 72, background: '#eee', borderRadius: 8, overflow: 'hidden', flexShrink: 0, marginRight: 16 }}>
+                          {thumbnail ? (
                             <img
-                              src={thumbnailUrls[item.videoId._id]}
-                              alt={item.videoId.title_youtube}
-                              className="w-full h-full object-cover"
+                              src={thumbnail}
+                              alt={title}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <span className="text-gray-400">Loading...</span>
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <span style={{ color: '#888' }}>Loading...</span>
                             </div>
                           )}
                         </div>

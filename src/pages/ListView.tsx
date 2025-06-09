@@ -87,11 +87,17 @@ const ListView = () => {
           <div style={{ color: '#AFB774' }}>No videos in this list.</div>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            {list.videoItems.map(item => (
-              <li key={item.videoId} style={{ display: 'flex', alignItems: 'center', marginBottom: 16, background: '#141414', borderRadius: 8, padding: 12 }}>
-                <img src={item.videoId.thumbnailUrl_youtube || ''} alt="thumbnail" style={{ width: 64, height: 36, objectFit: 'cover', borderRadius: 4, marginRight: 16 }} />
+            {list.videoItems.map((item: any) => (
+              <li key={typeof item.videoId === 'object' ? item.videoId._id : item.videoId} style={{ display: 'flex', alignItems: 'center', marginBottom: 16, background: '#141414', borderRadius: 8, padding: 12 }}>
+                <div style={{ width: 128, height: 72, background: '#eee', borderRadius: 8, overflow: 'hidden', flexShrink: 0, marginRight: 16 }}>
+                  <img
+                    src={item.videoId?.thumbnailUrl_youtube || (item.videoId?.youtubeVideoId ? `https://img.youtube.com/vi/${item.videoId.youtubeVideoId}/hqdefault.jpg` : '/placeholder-thumbnail.png')}
+                    alt={item.videoId?.title_youtube || 'thumbnail'}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 16, fontWeight: 500 }}>{item.videoId.title || item.videoId}</div>
+                  <div style={{ fontSize: 16, fontWeight: 500 }}>{item.videoId?.title_youtube || 'Loading...'}</div>
                   <div style={{ fontSize: 14, color: '#AFB774' }}>{item.addedAt ? new Date(item.addedAt).toLocaleString() : ''}</div>
                 </div>
                 <button onClick={() => handleRemoveVideo(item.videoId._id || item.videoId)} style={{ color: '#ff4d4f', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 16 }}>Remove</button>
