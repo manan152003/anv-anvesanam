@@ -23,43 +23,56 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, user, onAddVideo }) =>
       position: 'relative',
       zIndex: 10
     }}>
-      {/* Logo */}
-      <img
-        src="/logo.png"
-        alt="Anv Logo"
-        style={{
-          position: 'absolute',
-          left: 19,
-          top: 21,
-          width: 'auto',
-          height: 60,
-          zIndex: 10,
-          cursor: 'pointer',
-          transition: 'transform 0.3s ease',
-        }}
-        onClick={() => navigate(isAuthenticated ? '/about' : '/')}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-      />
+      {/* Left Section: Logo and (if auth) Discover */}
+      <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+        <img
+          src="/logo.png"
+          alt="Anv Logo"
+          style={{
+            marginLeft: 19,
+            width: 'auto',
+            height: 60,
+            zIndex: 10,
+            cursor: 'pointer',
+            transition: 'transform 0.3s ease',
+          }}
+          onClick={() => navigate(isAuthenticated ? '/about' : '/')}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+        />
+        {isAuthenticated && (
+          <span
+            style={{
+              cursor: 'pointer',
+              opacity: 1,
+              fontFamily: 'Lora, serif',
+              fontSize: 24,
+              fontWeight: 700,
+              marginLeft: 32,
+              color: '#DFD0B8',
+              letterSpacing: '0.5px',
+            }}
+            onClick={() => navigate('/discover')}
+          >
+            DISCOVER
+          </span>
+        )}
+      </div>
+      {/* Right Section: Auth/Non-auth nav */}
       <nav style={{
         display: 'flex',
         gap: 20,
         fontFamily: 'Lora, serif',
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 700,
-        marginLeft: 120,
         marginRight: 40,
-        flex: 1,
-        justifyContent: 'flex-end',
         alignItems: 'center',
       }}>
         {isAuthenticated ? (
           <>
-            <span style={{ cursor: 'pointer', opacity: 1 }} onClick={() => navigate('/discover')}>DISCOVER</span>
             <button
               style={{
-                marginLeft: 24,
-                background: '#22c55e',
+                background: '#DFD0B8',
                 color: '#141414',
                 border: 'none',
                 borderRadius: 8,
@@ -68,17 +81,17 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, user, onAddVideo }) =>
                 fontWeight: 700,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
+                marginRight: 16,
               }}
               onClick={onAddVideo}
             >
-              + Log
+              + ADD VIDEO
             </button>
             {user && (
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  marginLeft: 24,
                   cursor: 'pointer',
                   gap: 12,
                 }}
@@ -116,10 +129,9 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, user, onAddVideo }) =>
           </>
         ) : (
           <>
-            <span style={{ cursor: 'pointer', opacity: 1 }} onClick={() => navigate('/discover')}>DISCOVER</span>
-            <span style={{ cursor: 'pointer', opacity: 1 }} onClick={() => navigate('/about')}>ABOUT</span>
-            <span style={{ cursor: 'pointer', opacity: 1 }} onClick={() => navigate('/login')}>SIGN IN</span>
-            <span style={{ cursor: 'pointer', opacity: 1 }} onClick={() => navigate('/signup')}>CREATE ACCOUNT</span>
+            <span style={{ cursor: 'pointer', opacity: 1, color: '#DFD0B8' }} onClick={() => navigate('/about')}>ABOUT</span>
+            <span style={{ cursor: 'pointer', opacity: 1, color: '#DFD0B8' }} onClick={() => navigate('/login')}>SIGN IN</span>
+            <span style={{ cursor: 'pointer', opacity: 1, color: '#DFD0B8' }} onClick={() => navigate('/signup')}>CREATE ACCOUNT</span>
           </>
         )}
       </nav>
