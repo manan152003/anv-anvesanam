@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
-  const { login, signup } = useAuth();
+  const { login, signup, googleLogin } = useAuth();
 
   if (!isOpen) return null;
 
@@ -35,6 +36,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    try {
+      await googleLogin(credentialResponse.credential);
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Google login failed');
     }
   };
 
@@ -151,18 +161,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               <span className="mx-2 text-gray-400 text-xs">Or sign in with</span>
               <div className="flex-grow h-px bg-gray-200" />
             </div>
-            <div className="flex gap-3">
-              {SOCIALS.map((s) => (
-                <button
-                  key={s.name}
-                  type="button"
-                  className="flex-1 flex items-center justify-center border border-gray-300 rounded-[8px] py-2 bg-white hover:bg-gray-100 text-gray-700 font-medium"
-                  onClick={s.onClick}
-                  tabIndex={0}
-                >
-                  {s.icon} <span className="ml-2">{s.name}</span>
-                </button>
-              ))}
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => {
+                  setError('Google login failed');
+                }}
+                useOneTap
+                theme="filled_black"
+                shape="rectangular"
+                text={isLogin ? "signin_with" : "signup_with"}
+                locale="en"
+              />
             </div>
           </form>
         </div>

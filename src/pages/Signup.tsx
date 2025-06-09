@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 
 interface LocationState {
   from: string;
@@ -15,9 +16,12 @@ const Signup = () => {
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=' + Math.random());
   const [error, setError] = useState('');
-  const { signup } = useAuth();
+  const { signup, googleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
+  const [googleToken, setGoogleToken] = useState<string | null>(null);
+  const [googleInfo, setGoogleInfo] = useState<{ email: string; name: string; picture: string } | null>(null);
 
   // Get the redirect path and URL from location state
   const { from, url } = (location.state as LocationState) || { from: '/enter-details' };
@@ -30,6 +34,61 @@ const Signup = () => {
       navigate('/login', { state: { from, url }, replace: true });
     } catch (err: any) {
       setError(err.message || 'Failed to create account');
+    }
+  };
+
+  const handleGoogleSignup = async (credentialResponse: any) => {
+    if (!credentialResponse.credential) {
+      setError('Google sign up failed');
+      return;
+    }
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${apiUrl}/auth/google-signup/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: credentialResponse.credential }),
+      });
+      if (response.status === 409) {
+        setError('User already exists. Please log in.');
+        return;
+      }
+      if (!response.ok) {
+        setError('Google sign up failed');
+        return;
+      }
+      const data = await response.json();
+      setGoogleToken(credentialResponse.credential);
+      setGoogleInfo(data);
+      setShowCompleteProfile(true);
+    } catch (err) {
+      setError('Google sign up failed');
+    }
+  };
+
+  const handleCompleteProfile = async (username: string, password: string, confirmPassword: string) => {
+    if (!googleToken || !googleInfo) return;
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${apiUrl}/auth/google-signup/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: googleToken, username, password }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.message || 'Profile completion failed');
+        return;
+      }
+      const data = await response.json();
+      localStorage.setItem('authToken', data.token);
+      navigate('/discover');
+    } catch (err) {
+      setError('Profile completion failed');
     }
   };
 
@@ -87,7 +146,7 @@ const Signup = () => {
           fontWeight: 700,
           color: '#DFD0B8',
           marginBottom: '32px',
-          fontFamily: 'Bellefair, serif'
+          fontFamily: 'Lora , serif'
         }}>
           Create your account
         </h2>
@@ -106,250 +165,268 @@ const Signup = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div>
-            <label htmlFor="name" style={{
-              display: 'block',
-              color: 'rgba(223, 208, 184, 0.8)',
-              fontSize: '16px',
-              marginBottom: '8px',
-              fontFamily: 'Lora, serif'
-            }}>
-              Full Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: 'rgba(223, 208, 184, 0.05)',
-                border: '1px solid rgba(223, 208, 184, 0.2)',
-                borderRadius: '12px',
-                color: '#DFD0B8',
-                fontSize: '16px',
-                transition: 'all 0.3s ease',
-                fontFamily: 'Lora, serif'
-              }}
-              onFocus={(e) => {
-                e.target.style.background = 'rgba(223, 208, 184, 0.1)';
-                e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
-              }}
-              onBlur={(e) => {
-                e.target.style.background = 'rgba(223, 208, 184, 0.05)';
-                e.target.style.borderColor = 'rgba(223, 208, 184, 0.2)';
-              }}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="username" style={{
-              display: 'block',
-              color: 'rgba(223, 208, 184, 0.8)',
-              fontSize: '16px',
-              marginBottom: '8px',
-              fontFamily: 'Lora, serif'
-            }}>
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: 'rgba(223, 208, 184, 0.05)',
-                border: '1px solid rgba(223, 208, 184, 0.2)',
-                borderRadius: '12px',
-                color: '#DFD0B8',
-                fontSize: '16px',
-                transition: 'all 0.3s ease',
-                fontFamily: 'Lora, serif'
-              }}
-              onFocus={(e) => {
-                e.target.style.background = 'rgba(223, 208, 184, 0.1)';
-                e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
-              }}
-              onBlur={(e) => {
-                e.target.style.background = 'rgba(223, 208, 184, 0.05)';
-                e.target.style.borderColor = 'rgba(223, 208, 184, 0.2)';
-              }}
-              placeholder="Choose a unique username"
-            />
-            <div style={{
-              marginTop: '10px',
-              padding: '10px 14px',
-              background: 'rgba(223, 208, 184, 0.13)',
-              border: '1px solid #AFB774',
-              borderRadius: '8px',
-              color: '#AFB774',
-              fontSize: '15px',
-              fontFamily: 'Lora, serif',
-              fontWeight: 500,
-              letterSpacing: '0.2px',
-              boxShadow: '0 2px 8px rgba(175, 183, 116, 0.07)',
-              textAlign: 'left',
-              lineHeight: 1.4
-            }}>
-              ⓘ Username <b>cannot be changed</b> once set
+        {showCompleteProfile && googleInfo ? (
+          <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(20, 20, 20, 0.8)', borderRadius: '24px', padding: '40px', boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)', position: 'relative', zIndex: 1 }}>
+            <h2 style={{ textAlign: 'center', fontSize: '28px', fontWeight: 700, color: '#DFD0B8', marginBottom: '24px' }}>Complete your profile</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
+              <img src={googleInfo.picture} alt="avatar" style={{ width: 64, height: 64, borderRadius: '50%', marginBottom: 8 }} />
+              <div style={{ color: '#DFD0B8', fontSize: 18 }}>{googleInfo.name}</div>
+              <div style={{ color: '#AFB774', fontSize: 15 }}>{googleInfo.email}</div>
             </div>
+            <CompleteProfileForm onSubmit={handleCompleteProfile} error={error} />
           </div>
-
-          <div>
-            <label htmlFor="email" style={{
-              display: 'block',
-              color: 'rgba(223, 208, 184, 0.8)',
-              fontSize: '16px',
-              marginBottom: '8px',
-              fontFamily: 'Lora, serif'
-            }}>
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: 'rgba(223, 208, 184, 0.05)',
-                border: '1px solid rgba(223, 208, 184, 0.2)',
-                borderRadius: '12px',
-                color: '#DFD0B8',
+        ) : (
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div>
+              <label htmlFor="name" style={{
+                display: 'block',
+                color: 'rgba(223, 208, 184, 0.8)',
                 fontSize: '16px',
-                transition: 'all 0.3s ease',
+                marginBottom: '8px',
                 fontFamily: 'Lora, serif'
-              }}
-              onFocus={(e) => {
-                e.target.style.background = 'rgba(223, 208, 184, 0.1)';
-                e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
-              }}
-              onBlur={(e) => {
-                e.target.style.background = 'rgba(223, 208, 184, 0.05)';
-                e.target.style.borderColor = 'rgba(223, 208, 184, 0.2)';
-              }}
-            />
-          </div>
+              }}>
+                Full Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(223, 208, 184, 0.05)',
+                  border: '1px solid rgba(223, 208, 184, 0.2)',
+                  borderRadius: '12px',
+                  color: '#DFD0B8',
+                  fontSize: '16px',
+                  transition: 'all 0.3s ease',
+                  fontFamily: 'Lora, serif'
+                }}
+                onFocus={(e) => {
+                  e.target.style.background = 'rgba(223, 208, 184, 0.1)';
+                  e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.background = 'rgba(223, 208, 184, 0.05)';
+                  e.target.style.borderColor = 'rgba(223, 208, 184, 0.2)';
+                }}
+              />
+            </div>
 
-          <div>
-            <label htmlFor="password" style={{
-              display: 'block',
-              color: 'rgba(223, 208, 184, 0.8)',
-              fontSize: '16px',
-              marginBottom: '8px',
-              fontFamily: 'Lora, serif'
-            }}>
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: 'rgba(223, 208, 184, 0.05)',
-                border: '1px solid rgba(223, 208, 184, 0.2)',
-                borderRadius: '12px',
-                color: '#DFD0B8',
+            <div>
+              <label htmlFor="username" style={{
+                display: 'block',
+                color: 'rgba(223, 208, 184, 0.8)',
                 fontSize: '16px',
-                transition: 'all 0.3s ease',
+                marginBottom: '8px',
                 fontFamily: 'Lora, serif'
-              }}
-              onFocus={(e) => {
-                e.target.style.background = 'rgba(223, 208, 184, 0.1)';
-                e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
-              }}
-              onBlur={(e) => {
-                e.target.style.background = 'rgba(223, 208, 184, 0.05)';
-                e.target.style.borderColor = 'rgba(223, 208, 184, 0.2)';
-              }}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="bio" style={{
-              display: 'block',
-              color: 'rgba(223, 208, 184, 0.8)',
-              fontSize: '16px',
-              marginBottom: '8px',
-              fontFamily: 'Lora, serif'
-            }}>
-              Bio (Optional)
-            </label>
-            <textarea
-              id="bio"
-              name="bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: 'rgba(223, 208, 184, 0.05)',
-                border: '1px solid rgba(223, 208, 184, 0.2)',
-                borderRadius: '12px',
-                color: '#DFD0B8',
-                fontSize: '16px',
-                transition: 'all 0.3s ease',
+              }}>
+                Username
+              </label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(223, 208, 184, 0.05)',
+                  border: '1px solid rgba(223, 208, 184, 0.2)',
+                  borderRadius: '12px',
+                  color: '#DFD0B8',
+                  fontSize: '16px',
+                  transition: 'all 0.3s ease',
+                  fontFamily: 'Lora, serif'
+                }}
+                onFocus={(e) => {
+                  e.target.style.background = 'rgba(223, 208, 184, 0.1)';
+                  e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.background = 'rgba(223, 208, 184, 0.05)';
+                  e.target.style.borderColor = 'rgba(223, 208, 184, 0.2)';
+                }}
+                placeholder="Choose a unique username"
+              />
+              <div style={{
+                marginTop: '10px',
+                padding: '10px 14px',
+                background: 'rgba(223, 208, 184, 0.13)',
+                border: '1px solid #AFB774',
+                borderRadius: '8px',
+                color: '#AFB774',
+                fontSize: '15px',
                 fontFamily: 'Lora, serif',
-                minHeight: '100px',
-                resize: 'vertical'
-              }}
-              onFocus={(e) => {
-                e.target.style.background = 'rgba(223, 208, 184, 0.1)';
-                e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
-              }}
-              onBlur={(e) => {
-                e.target.style.background = 'rgba(223, 208, 184, 0.05)';
-                e.target.style.borderColor = 'rgba(223, 208, 184, 0.2)';
-              }}
-              placeholder="Tell us about yourself"
-            />
-          </div>
+                fontWeight: 500,
+                letterSpacing: '0.2px',
+                boxShadow: '0 2px 8px rgba(175, 183, 116, 0.07)',
+                textAlign: 'left',
+                lineHeight: 1.4
+              }}>
+                ⓘ Username <b>cannot be changed</b> once set
+              </div>
+            </div>
 
-          <button
-            type="submit"
-            style={{
-              width: '100%',
-              padding: '16px',
-              background: 'linear-gradient(135deg, #DFD0B8 0%, #C9B896 100%)',
-              borderRadius: '12px',
-              border: 'none',
-              color: '#141414',
-              fontSize: '18px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              fontFamily: 'Lora, serif',
-              marginTop: '16px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            Create Account
-          </button>
-        </form>
+            <div>
+              <label htmlFor="email" style={{
+                display: 'block',
+                color: 'rgba(223, 208, 184, 0.8)',
+                fontSize: '16px',
+                marginBottom: '8px',
+                fontFamily: 'Lora, serif'
+              }}>
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(223, 208, 184, 0.05)',
+                  border: '1px solid rgba(223, 208, 184, 0.2)',
+                  borderRadius: '12px',
+                  color: '#DFD0B8',
+                  fontSize: '16px',
+                  transition: 'all 0.3s ease',
+                  fontFamily: 'Lora, serif'
+                }}
+                onFocus={(e) => {
+                  e.target.style.background = 'rgba(223, 208, 184, 0.1)';
+                  e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.background = 'rgba(223, 208, 184, 0.05)';
+                  e.target.style.borderColor = 'rgba(223, 208, 184, 0.2)';
+                }}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" style={{
+                display: 'block',
+                color: 'rgba(223, 208, 184, 0.8)',
+                fontSize: '16px',
+                marginBottom: '8px',
+                fontFamily: 'Lora, serif'
+              }}>
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(223, 208, 184, 0.05)',
+                  border: '1px solid rgba(223, 208, 184, 0.2)',
+                  borderRadius: '12px',
+                  color: '#DFD0B8',
+                  fontSize: '16px',
+                  transition: 'all 0.3s ease',
+                  fontFamily: 'Lora, serif'
+                }}
+                onFocus={(e) => {
+                  e.target.style.background = 'rgba(223, 208, 184, 0.1)';
+                  e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.background = 'rgba(223, 208, 184, 0.05)';
+                  e.target.style.borderColor = 'rgba(223, 208, 184, 0.2)';
+                }}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="bio" style={{
+                display: 'block',
+                color: 'rgba(223, 208, 184, 0.8)',
+                fontSize: '16px',
+                marginBottom: '8px',
+                fontFamily: 'Lora, serif'
+              }}>
+                Bio (Optional)
+              </label>
+              <textarea
+                id="bio"
+                name="bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(223, 208, 184, 0.05)',
+                  border: '1px solid rgba(223, 208, 184, 0.2)',
+                  borderRadius: '12px',
+                  color: '#DFD0B8',
+                  fontSize: '16px',
+                  transition: 'all 0.3s ease',
+                  fontFamily: 'Lora, serif',
+                  minHeight: '100px',
+                  resize: 'vertical'
+                }}
+                onFocus={(e) => {
+                  e.target.style.background = 'rgba(223, 208, 184, 0.1)';
+                  e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.background = 'rgba(223, 208, 184, 0.05)';
+                  e.target.style.borderColor = 'rgba(223, 208, 184, 0.2)';
+                }}
+                placeholder="Tell us about yourself"
+              />
+            </div>
+
+            <button
+              type="submit"
+              style={{
+                width: '100%',
+                padding: '14px 0',
+                background: 'linear-gradient(90deg, #DFD0B8 0%, #AFB774 100%)',
+                color: '#181818',
+                fontWeight: 700,
+                fontSize: '18px',
+                border: 'none',
+                borderRadius: '12px',
+                marginTop: '8px',
+                marginBottom: '16px',
+                cursor: 'pointer',
+                fontFamily: 'Lora, serif',
+                boxShadow: '0 2px 8px rgba(223, 208, 184, 0.13)'
+              }}
+            >
+              Create Account
+            </button>
+            <div style={{ textAlign: 'center', margin: '16px 0', color: '#DFD0B8', fontFamily: 'Lora, serif' }}>
+              or
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <GoogleLogin
+                onSuccess={handleGoogleSignup}
+                onError={() => setError('Google sign up failed')}
+                theme="filled_black"
+                shape="rectangular"
+                text="signup_with"
+                locale="en"
+              />
+            </div>
+          </form>
+        )}
 
         <div style={{
           textAlign: 'center',
@@ -408,5 +485,20 @@ const Signup = () => {
     </div>
   );
 };
+
+function CompleteProfileForm({ onSubmit, error }: { onSubmit: (username: string, password: string, confirmPassword: string) => void; error: string }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  return (
+    <form onSubmit={e => { e.preventDefault(); onSubmit(username, password, confirmPassword); }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <input type="text" placeholder="Choose a username" value={username} onChange={e => setUsername(e.target.value)} required style={{ padding: 12, borderRadius: 8, border: '1px solid #AFB774', fontSize: 16 }} />
+      <input type="password" placeholder="Set a password" value={password} onChange={e => setPassword(e.target.value)} required style={{ padding: 12, borderRadius: 8, border: '1px solid #AFB774', fontSize: 16 }} />
+      <input type="password" placeholder="Confirm password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required style={{ padding: 12, borderRadius: 8, border: '1px solid #AFB774', fontSize: 16 }} />
+      {error && <div style={{ color: '#ff6b6b', marginBottom: 8 }}>{error}</div>}
+      <button type="submit" style={{ padding: 14, borderRadius: 8, background: '#AFB774', color: '#181818', fontWeight: 700, fontSize: 18, border: 'none', cursor: 'pointer' }}>Complete Signup</button>
+    </form>
+  );
+}
 
 export default Signup; 

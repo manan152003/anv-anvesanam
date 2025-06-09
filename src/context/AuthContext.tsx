@@ -15,6 +15,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (identifier: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name: string, username: string, avatarUrl: string, bio?: string) => Promise<void>;
+  googleLogin: (token: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
   setUser: (user: User | null) => void;
@@ -127,6 +128,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
+  const googleLogin = async (token: string) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${apiUrl}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Google login failed');
+      }
+      const data = await response.json();
+      localStorage.setItem('authToken', data.token);
+      setUser({
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.name,
+        username: data.user.username,
+        avatarUrl: data.user.avatarUrl,
+        bio: data.user.bio,
+        role: data.user.role,
+      });
+    } catch (error: any) {
+      throw new Error(error.message || 'Google login failed');
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -134,6 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         login,
         signup,
+        googleLogin,
         logout,
         isLoading,
         setUser

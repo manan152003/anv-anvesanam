@@ -82,7 +82,7 @@ const Login = () => {
           fontWeight: 700,
           color: '#DFD0B8',
           marginBottom: '32px',
-          fontFamily: 'Bellefair, serif'
+          fontFamily: 'Lora , serif'
         }}>
           Welcome back
         </h2>
