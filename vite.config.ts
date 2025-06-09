@@ -34,4 +34,5 @@ export default defineConfig({
       clientPort: 3000,
     },
   },
+  base: '/',
 })
