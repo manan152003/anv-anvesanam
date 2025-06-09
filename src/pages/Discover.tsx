@@ -64,6 +64,8 @@ const Discover: React.FC = () => {
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [sundayStack, setSundayStack] = useState<Video[]>([]);
   const sortRef = useRef<HTMLDivElement>(null);
+  const [swipeAnimation, setSwipeAnimation] = useState<{ x: number; y: number; rotation: number }>({ x: 0, y: 0, rotation: 0 });
+  const [isSwiping, setIsSwiping] = useState(false);
 
   useEffect(() => {
     getCategories().then(setCategories).catch(() => setCategories([]));
@@ -373,6 +375,68 @@ const Discover: React.FC = () => {
     if (!Array.isArray(sundayStack)) {
       return <div style={{ textAlign: 'center', color: '#ff4d4f', fontSize: 24 }}>Failed to load Sunday Picks</div>;
     }
+
+    // Show completion message when stack is empty
+    if (sundayStack.length === 0) {
+      return (
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          minHeight: '70vh',
+          gap: '32px'
+        }}>
+          <div style={{ 
+            fontSize: 32, 
+            fontFamily: 'Bellefair, serif', 
+            color: '#DFD0B8', 
+            textAlign: 'center',
+            maxWidth: '600px',
+            lineHeight: 1.4
+          }}>
+            That's it for today! Come back tomorrow for more curated picks.
+          </div>
+          <button
+            onClick={() => {
+              setSundayStack(videos);
+              setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
+            }}
+            style={{
+              padding: '16px 32px',
+              fontSize: '18px',
+              fontFamily: 'Lora, serif',
+              color: '#DFD0B8',
+              background: 'rgba(223, 208, 184, 0.1)',
+              border: '1px solid rgba(223, 208, 184, 0.2)',
+              borderRadius: '16px',
+              cursor: 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+              ':hover': {
+                background: 'rgba(223, 208, 184, 0.15)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)'
+              }
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(223, 208, 184, 0.15)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.25)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(223, 208, 184, 0.1)';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+            }}
+          >
+            Do Again
+          </button>
+        </div>
+      );
+    }
+
     // Only show top two cards for the stack effect
     const visibleCards = sundayStack.slice(0, 2);
     return (
@@ -396,10 +460,11 @@ const Discover: React.FC = () => {
                   boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
                   cursor: 'pointer',
                   opacity: 1,
-                  transition: 'all 0.2s cubic-bezier(.4,2,.6,1)',
+                  transition: isSwiping ? 'none' : 'all 0.2s cubic-bezier(.4,2,.6,1)',
                   touchAction: 'pan-y',
                   userSelect: 'auto' as 'auto',
                   pointerEvents: 'auto' as 'auto',
+                  transform: `translate(${swipeAnimation.x}px, ${swipeAnimation.y}px) rotate(${swipeAnimation.rotation}deg)`,
                 }
               : {
                   position: 'absolute' as 'absolute',
@@ -419,8 +484,33 @@ const Discover: React.FC = () => {
                 };
             const handlers = isTop
               ? useSwipeable({
-                  onSwipedLeft: () => handleSwipe('left'),
-                  onSwipedRight: () => handleSwipe('right'),
+                  onSwiping: (e) => {
+                    setIsSwiping(true);
+                    const x = e.deltaX;
+                    const y = e.deltaY * 0.3; // Reduce vertical movement
+                    const rotation = x * 0.1; // Rotate based on horizontal movement
+                    setSwipeAnimation({ x, y, rotation });
+                  },
+                  onSwipedLeft: () => {
+                    setIsSwiping(false);
+                    setSwipeAnimation({ x: -1000, y: 0, rotation: -30 });
+                    setTimeout(() => {
+                      handleSwipe('left');
+                      setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
+                    }, 300);
+                  },
+                  onSwipedRight: () => {
+                    setIsSwiping(false);
+                    setSwipeAnimation({ x: 1000, y: 0, rotation: 30 });
+                    setTimeout(() => {
+                      handleSwipe('right');
+                      setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
+                    }, 300);
+                  },
+                  onSwiped: () => {
+                    setIsSwiping(false);
+                    setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
+                  },
                   trackMouse: true,
                 })
               : {};
@@ -788,18 +878,6 @@ const Discover: React.FC = () => {
       position: 'relative',
       overflow: 'auto'
     }}>
-      {/* Animated background elements */}
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        background: 'radial-gradient(circle at 20% 50%, rgba(223, 208, 184, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(223, 208, 184, 0.02) 0%, transparent 50%)',
-        pointerEvents: 'none',
-        zIndex: 0
-      }} />
-
       {/* Tabs with modern styling */}
       <div style={{
         display: 'flex',
@@ -812,6 +890,35 @@ const Discover: React.FC = () => {
         position: 'relative',
         zIndex: 1
       }}>
+        {tab !== 'default' && (
+          <span
+            className="modern-tab"
+            style={{
+              opacity: 1,
+              cursor: 'pointer',
+              padding: '12px 0',
+              transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              letterSpacing: '0.5px',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              color: '#DFD0B8',
+            }}
+            onClick={() => setTab('default')}
+            onMouseEnter={e => {
+              e.currentTarget.style.opacity = '0.9';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.opacity = '1';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <span style={{ fontSize: '24px' }}>←</span>
+            DISCOVER
+          </span>
+        )}
         {TABS.map(t => (
           <span
             key={t.value}

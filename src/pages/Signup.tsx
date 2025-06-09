@@ -16,7 +16,7 @@ const Signup = () => {
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=' + Math.random());
   const [error, setError] = useState('');
-  const { signup, googleLogin } = useAuth();
+  const { signup, setUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showCompleteProfile, setShowCompleteProfile] = useState(false);
@@ -55,8 +55,30 @@ const Signup = () => {
     e.preventDefault();
     try {
       await signup(email, password, name, username, avatarUrl, bio);
-      // Redirect to login page with the original destination and URL
-      navigate('/login', { state: { from, url }, replace: true });
+      // Fetch user data after signup
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        const response = await fetch(`${apiUrl}/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          setUser({
+            id: userData.id,
+            email: userData.email,
+            name: userData.name,
+            username: userData.username,
+            avatarUrl: userData.avatarUrl,
+            bio: userData.bio,
+            role: userData.role,
+          });
+          navigate('/discover');
+          return;
+        }
+      }
+      // fallback
+      window.location.reload();
     } catch (err: any) {
       setError(err.message || 'Failed to create account');
     }
@@ -111,7 +133,27 @@ const Signup = () => {
       }
       const data = await response.json();
       localStorage.setItem('authToken', data.token);
-      navigate('/discover');
+      // Fetch user data after Google signup
+      const token = data.token;
+      const meResponse = await fetch(`${apiUrl}/auth/me`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (meResponse.ok) {
+        const userData = await meResponse.json();
+        setUser({
+          id: userData.id,
+          email: userData.email,
+          name: userData.name,
+          username: userData.username,
+          avatarUrl: userData.avatarUrl,
+          bio: userData.bio,
+          role: userData.role,
+        });
+        navigate('/discover');
+        return;
+      }
+      // fallback
+      window.location.reload();
     } catch (err) {
       setError('Profile completion failed');
     }

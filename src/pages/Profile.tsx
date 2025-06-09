@@ -458,6 +458,70 @@ const Profile: React.FC = () => {
                 style={{
                   fontFamily: 'Lora, serif',
                   fontSize: '16px',
+                  background: 'rgba(223, 208, 184, 0.15)',
+                  backdropFilter: 'blur(10px)',
+                  color: '#DFD0B8',
+                  border: '1px solid rgba(223, 208, 184, 0.3)',
+                  borderRadius: '12px',
+                  padding: '12px 24px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  letterSpacing: '0.5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onClick={() => {
+                  const profileUrl = `https://anv-anvesanam.vercel.app/profile/${user.username}`;
+                  if (navigator.share) {
+                    navigator.share({
+                      title: `${user.name}'s Profile`,
+                      text: `Check out ${user.name}'s profile on Anvesanam!`,
+                      url: profileUrl
+                    }).catch(console.error);
+                  } else {
+                    navigator.clipboard.writeText(profileUrl).then(() => {
+                      alert('Profile link copied to clipboard!');
+                    }).catch(console.error);
+                    // Fallback for browsers that don't support clipboard API
+                    if (!navigator.clipboard) {
+                      const textArea = document.createElement('textarea');
+                      textArea.value = profileUrl;
+                      document.body.appendChild(textArea);
+                      textArea.select();
+                      try {
+                        document.execCommand('copy');
+                        alert('Profile link copied to clipboard!');
+                      } catch (err) {
+                        console.error('Failed to copy text: ', err);
+                      }
+                      document.body.removeChild(textArea);
+                    }
+                  }
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(223, 208, 184, 0.25)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(223, 208, 184, 0.15)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                  <polyline points="16 6 12 2 8 6"></polyline>
+                  <line x1="12" y1="2" x2="12" y2="15"></line>
+                </svg>
+                share profile
+              </button>
+              <button
+                style={{
+                  fontFamily: 'Lora, serif',
+                  fontSize: '16px',
                   background: 'rgba(175, 183, 116, 0.15)',
                   backdropFilter: 'blur(10px)',
                   color: '#AFB774',
