@@ -287,7 +287,7 @@ const ProfilePublic: React.FC = () => {
           <div style={{
             fontSize: '24px',
             color: '#ff6b6b',
-            fontFamily: 'Bellefair, serif',
+            fontFamily: 'Lora, serif',
             marginBottom: '10px'
           }}>
             {error || 'Profile not found'}
@@ -386,7 +386,7 @@ const ProfilePublic: React.FC = () => {
           {/* User Info */}
           <div style={{ marginTop: '16px', flex: 1 }}>
             <div style={{
-              fontFamily: 'Bellefair, serif',
+              fontFamily: 'Lora, serif',
               fontSize: '56px',
               color: '#DFD0B8',
               fontWeight: 700,
@@ -515,7 +515,7 @@ const ProfilePublic: React.FC = () => {
                   fontWeight: 700,
                   color: '#DFD0B8',
                   marginBottom: '8px',
-                  fontFamily: 'Bellefair, serif'
+                  fontFamily: 'Lora, serif'
                 }}>
                   {stat.value}
                 </div>
@@ -540,7 +540,7 @@ const ProfilePublic: React.FC = () => {
           animation: 'fadeInUp 0.8s ease-out 0.5s both'
         }}>
           <div style={{
-            fontFamily: 'Bellefair, serif',
+            fontFamily: 'Lora, serif',
             fontSize: '40px',
             fontWeight: 700,
             color: '#DFD0B8',
@@ -579,7 +579,7 @@ const ProfilePublic: React.FC = () => {
           animation: 'fadeInUp 0.8s ease-out 0.7s both'
         }}>
           <div style={{
-            fontFamily: 'Bellefair, serif',
+            fontFamily: 'Lora, serif',
             fontSize: '40px',
             fontWeight: 700,
             color: '#DFD0B8',
@@ -630,7 +630,7 @@ const ProfilePublic: React.FC = () => {
           animation: 'fadeInUp 0.8s ease-out 0.9s both'
         }}>
           <div style={{
-            fontFamily: 'Bellefair, serif',
+            fontFamily: 'Lora, serif',
             fontSize: '40px',
             fontWeight: 700,
             color: '#DFD0B8',

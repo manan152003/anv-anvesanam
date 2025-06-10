@@ -67,7 +67,7 @@ const Landing: React.FC = () => {
             Feeling Bored?
           </h1>
           <p style={{
-            fontFamily: 'Lora, serif',
+            fontFamily: 'Bellefair, serif',
             fontWeight: '400',
             fontSize: 'clamp(24px, 3vw, 36px)',
             color: '#DFD0B8',
