@@ -7,3 +7,13 @@ export interface User {
   bio?: string;
   role?: string;
 } 
+
+export interface List {
+  _id: string;
+  name: string;
+  isDefault: boolean;
+  videoItems: string[];
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+} 

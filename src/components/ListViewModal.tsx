@@ -20,6 +20,7 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
   const [renamingError, setRenamingError] = useState('');
   const [videoCache, setVideoCache] = useState<Record<string, any>>({});
   const [thumbnailUrls, setThumbnailUrls] = useState<{ [key: string]: string }>({});
+  const [imageLoaded, setImageLoaded] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     if (isOpen && listId) fetchList();
@@ -101,134 +102,538 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0, 0, 0, 0.75)',
+        background: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: 'blur(10px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1100,
+        animation: 'fadeIn 0.3s ease-out'
       }}
       onClick={onClose}
     >
       <div
         style={{
-          background: '#1A1A1A',
-          borderRadius: 16,
-          padding: 32,
-          width: 480,
-          maxWidth: '90vw',
+          background: 'rgba(20, 20, 20, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          padding: '40px',
+          width: '90vw',
+          maxWidth: '1200px',
           maxHeight: '90vh',
           overflow: 'auto',
           color: '#DFD0B8',
           fontFamily: 'Lora, serif',
+          boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
+          animation: 'slideUp 0.3s ease-out'
         }}
         onClick={e => e.stopPropagation()}
       >
-        <button onClick={onClose} style={{ marginBottom: 16, color: '#AFB774', background: 'none', border: 'none', cursor: 'pointer' }}>← Back</button>
+        <button 
+          onClick={onClose} 
+          style={{ 
+            marginBottom: 32, 
+            color: '#DFD0B8', 
+            background: 'rgba(223, 208, 184, 0.1)',
+            border: '1px solid rgba(223, 208, 184, 0.2)',
+            borderRadius: '16px',
+            padding: '12px 24px',
+            fontSize: '16px',
+            fontFamily: 'Lora, serif',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(223, 208, 184, 0.15)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(223, 208, 184, 0.1)';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <span style={{ fontSize: '20px' }}>←</span> Back
+        </button>
+
         {loading ? (
-          <div style={{ padding: 32 }}>Loading...</div>
+          <div style={{ 
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '60px 0'
+          }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              border: '3px solid #DFD0B8',
+              borderTop: '3px solid transparent',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }} />
+            <div style={{ 
+              color: '#DFD0B8', 
+              fontFamily: 'Lora, serif', 
+              fontSize: '18px',
+              fontWeight: 300,
+              letterSpacing: '0.5px',
+              marginTop: '20px'
+            }}>
+              Loading your list...
+            </div>
+          </div>
         ) : error ? (
-          <div style={{ color: 'red', padding: 32 }}>{error}</div>
+          <div style={{
+            textAlign: 'center',
+            padding: '60px 40px',
+            background: 'rgba(255, 77, 77, 0.05)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '20px',
+            border: '1px solid rgba(255, 77, 77, 0.2)',
+            animation: 'fadeInUp 0.8s ease-out'
+          }}>
+            <div style={{
+              fontSize: '24px',
+              color: '#ff6b6b',
+              fontFamily: 'Lora, serif',
+              marginBottom: '10px'
+            }}>
+              {error}
+            </div>
+            <div style={{
+              fontSize: '16px',
+              color: 'rgba(255, 107, 107, 0.7)',
+              fontFamily: 'Lora, serif'
+            }}>
+              Please try again later
+            </div>
+          </div>
         ) : !list ? null : (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
-              {renaming ? (
-                <>
-                  <input
-                    value={newName}
-                    onChange={e => setNewName(e.target.value)}
-                    style={{ fontSize: 20, padding: 8, borderRadius: 8, border: '1px solid #AFB774', marginRight: 8 }}
-                  />
-                  <button onClick={handleRename} style={{ marginRight: 8, color: '#DFD0B8', background: '#210f37', border: '1px solid #AFB774', borderRadius: 8, padding: '4px 12px' }}>Save</button>
-                  <button onClick={() => setRenaming(false)} style={{ color: '#DFD0B8', background: 'none', border: 'none', cursor: 'pointer' }}>Cancel</button>
-                  {renamingError && <span style={{ color: 'red', marginLeft: 8 }}>{renamingError}</span>}
-                </>
-              ) : (
-                <>
-                  <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>{list.name}</h2>
-                  {!list.isDefault && (
-                    <button onClick={() => setRenaming(true)} style={{ marginLeft: 16, color: '#AFB774', background: 'none', border: 'none', cursor: 'pointer' }}>Rename</button>
-                  )}
-                  {list.isDefault && <span style={{ marginLeft: 8, fontSize: 14, color: '#AFB774' }}>(Default)</span>}
-                </> 
-              )}
+            <div style={{ 
+              background: 'rgba(20, 20, 20, 0.8)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '24px',
+              padding: '40px',
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
+              marginBottom: '40px',
+              animation: 'slideUp 0.8s ease-out'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
+                {renaming ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', width: '100%' }}>
+                    <input
+                      value={newName}
+                      onChange={e => setNewName(e.target.value)}
+                      style={{ 
+                        flex: 1,
+                        fontSize: 24,
+                        padding: '12px 20px',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(223, 208, 184, 0.2)',
+                        background: 'rgba(223, 208, 184, 0.05)',
+                        color: '#DFD0B8',
+                        fontFamily: 'Lora, serif',
+                        outline: 'none'
+                      }}
+                    />
+                    <button 
+                      onClick={handleRename} 
+                      style={{ 
+                        padding: '12px 24px',
+                        background: 'rgba(223, 208, 184, 0.1)',
+                        border: '1px solid rgba(223, 208, 184, 0.2)',
+                        borderRadius: '16px',
+                        color: '#DFD0B8',
+                        fontSize: '16px',
+                        fontFamily: 'Lora, serif',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(223, 208, 184, 0.15)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(223, 208, 184, 0.1)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      Save
+                    </button>
+                    <button 
+                      onClick={() => setRenaming(false)} 
+                      style={{ 
+                        padding: '12px 24px',
+                        background: 'rgba(255, 77, 77, 0.1)',
+                        border: '1px solid rgba(255, 77, 77, 0.2)',
+                        borderRadius: '16px',
+                        color: '#ff4d4f',
+                        fontSize: '16px',
+                        fontFamily: 'Lora, serif',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 77, 77, 0.15)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 77, 77, 0.1)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    {renamingError && (
+                      <span style={{ color: '#ff4d4f', marginLeft: 16, fontSize: '14px' }}>{renamingError}</span>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <h2 style={{ 
+                      fontSize: 32, 
+                      fontWeight: 700, 
+                      margin: 0,
+                      fontFamily: 'Lora, serif',
+                      color: '#DFD0B8'
+                    }}>
+                      {list.name}
+                    </h2>
+                    {!list.isDefault && (
+                      <>
+                        <button 
+                          aria-label="Rename List"
+                          onClick={() => setRenaming(true)} 
+                          style={{ 
+                            marginLeft: 16, 
+                            color: '#DFD0B8',
+                            background: 'rgba(223, 208, 184, 0.1)',
+                            border: '1px solid rgba(223, 208, 184, 0.2)',
+                            borderRadius: '16px',
+                            padding: '8px 16px',
+                            fontSize: '14px',
+                            fontFamily: 'Lora, serif',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(223, 208, 184, 0.15)';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(223, 208, 184, 0.1)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                          }}
+                        >
+                          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 17.25V14.75L14.81 2.94C15.2 2.55 15.83 2.55 16.22 2.94L17.06 3.78C17.45 4.17 17.45 4.8 17.06 5.19L5.25 17H2.75C2.34 17 2 16.66 2 16.25V13.75L3 17.25Z" stroke="#DFD0B8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
+                        <button
+                          aria-label="Delete List"
+                          onClick={async () => {
+                            if (window.confirm('Are you sure you want to delete this list?')) {
+                              try {
+                                await deleteList(list._id);
+                                onClose();
+                                if (onListDeleted) onListDeleted();
+                              } catch (err) {
+                                alert('Failed to delete list');
+                              }
+                            }
+                          }}
+                          style={{
+                            marginLeft: 12,
+                            color: '#ff4d4f',
+                            background: 'rgba(255, 77, 77, 0.1)',
+                            border: '1px solid rgba(255, 77, 77, 0.2)',
+                            borderRadius: '16px',
+                            padding: '8px 16px',
+                            fontSize: '14px',
+                            fontFamily: 'Lora, serif',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 77, 77, 0.15)';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 77, 77, 0.1)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                          }}
+                        >
+                          Delete List
+                        </button>
+                      </>
+                    )}
+                    {list.isDefault && (
+                      <span style={{ 
+                        marginLeft: 16, 
+                        fontSize: 14, 
+                        color: 'rgba(223, 208, 184, 0.6)',
+                        background: 'rgba(223, 208, 184, 0.1)',
+                        padding: '4px 12px',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(223, 208, 184, 0.2)'
+                      }}>
+                        Default List
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+              <div style={{ 
+                marginBottom: 24, 
+                fontSize: 16,
+                color: 'rgba(223, 208, 184, 0.6)',
+                fontFamily: 'Lora, serif'
+              }}>
+                {list.videoItems.length} videos
+              </div>
             </div>
-            <div style={{ marginBottom: 24, fontSize: 16 }}>{list.videoItems.length} videos</div>
-            <div>
+
+            <div style={{ 
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
+              gap: '32px',
+              animation: 'fadeInUp 0.8s ease-out 0.3s both'
+            }}>
               {list.videoItems.length === 0 ? (
-                <div style={{ color: '#AFB774' }}>No videos in this list.</div>
+                <div style={{ 
+                  gridColumn: '1/-1',
+                  textAlign: 'center',
+                  padding: '60px 40px',
+                  background: 'rgba(223, 208, 184, 0.05)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '20px',
+                  border: '1px solid rgba(223, 208, 184, 0.1)',
+                  animation: 'fadeInUp 0.8s ease-out'
+                }}>
+                  <div style={{
+                    fontSize: '24px',
+                    color: '#DFD0B8',
+                    fontFamily: 'Lora, serif',
+                    marginBottom: '10px'
+                  }}>
+                    No videos in this list
+                  </div>
+                  <div style={{
+                    fontSize: '16px',
+                    color: 'rgba(223, 208, 184, 0.7)',
+                    fontFamily: 'Lora, serif'
+                  }}>
+                    Add some videos to get started
+                  </div>
+                </div>
               ) : (
-                <ul style={{ listStyle: 'none', padding: 0 }}>
-                  {list.videoItems.map((item: any) => {
-                    let videoObj: any = typeof item.videoId === 'object'
-                      ? item.videoId
-                      : videoCache[item.videoId as string];
+                list.videoItems.map((item: any, index: number) => {
+                  let videoObj: any = typeof item.videoId === 'object'
+                    ? item.videoId
+                    : videoCache[item.videoId as string];
 
-                    const thumbnail =
-                      videoObj?.thumbnailUrl_youtube ||
-                      (videoObj?.youtubeVideoId
-                        ? `https://img.youtube.com/vi/${videoObj.youtubeVideoId}/hqdefault.jpg`
-                        : '/placeholder-thumbnail.png');
+                  const thumbnail =
+                    videoObj?.thumbnailUrl_youtube ||
+                    (videoObj?.youtubeVideoId
+                      ? `https://img.youtube.com/vi/${videoObj.youtubeVideoId}/hqdefault.jpg`
+                      : '/placeholder-thumbnail.png');
 
-                    const title =
-                      videoObj?.title_youtube ||
-                      (typeof item.videoId === 'object' && item.videoId.title_youtube) ||
-                      (typeof item.videoId === 'string' ? 'Loading...' : '');
+                  const title =
+                    videoObj?.title_youtube ||
+                    (typeof item.videoId === 'object' && item.videoId.title_youtube) ||
+                    (typeof item.videoId === 'string' ? 'Loading...' : '');
 
-                    return (
-                      <li key={typeof item.videoId === 'string' ? item.videoId : item.videoId._id} style={{ display: 'flex', alignItems: 'center', marginBottom: 16, background: '#141414', borderRadius: 8, padding: 12 }}>
-                        <div style={{ width: 128, height: 72, background: '#eee', borderRadius: 8, overflow: 'hidden', flexShrink: 0, marginRight: 16 }}>
-                          {thumbnail ? (
-                            <img
-                              src={thumbnail}
-                              alt={title}
-                              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                            />
-                          ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <span style={{ color: '#888' }}>Loading...</span>
-                            </div>
-                          )}
+                  return (
+                    <div 
+                      key={typeof item.videoId === 'string' ? item.videoId : item.videoId._id}
+                      style={{
+                        background: 'rgba(20, 20, 20, 0.8)',
+                        backdropFilter: 'blur(20px)',
+                        borderRadius: '24px',
+                        overflow: 'hidden',
+                        boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
+                        animation: `fadeInUp 0.8s ease-out ${index * 0.1}s both`,
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow = '0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(223, 208, 184, 0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)';
+                      }}
+                    >
+                      <div style={{ 
+                        position: 'relative',
+                        width: '100%',
+                        paddingTop: '56.25%', // 16:9 aspect ratio
+                        overflow: 'hidden'
+                      }}>
+                        <img
+                          src={thumbnail}
+                          alt={title}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            transition: 'all 0.6s ease',
+                            transform: imageLoaded[item.videoId._id] ? 'scale(1)' : 'scale(1.1)',
+                            filter: imageLoaded[item.videoId._id] ? 'brightness(1)' : 'brightness(0.8)'
+                          }}
+                          onLoad={() => setImageLoaded(prev => ({ ...prev, [item.videoId._id]: true }))}
+                        />
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.8))',
+                          opacity: 0,
+                          transition: 'opacity 0.3s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.opacity = '1';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = '0';
+                        }}
+                        >
+                          <button
+                            onClick={() => window.location.href = `/home?videoId=${item.videoId._id}`}
+                            style={{
+                              background: 'rgba(223, 208, 184, 0.9)',
+                              border: 'none',
+                              borderRadius: '50%',
+                              width: '60px',
+                              height: '60px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease',
+                              transform: 'scale(0.8)',
+                              opacity: 0
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'scale(1)';
+                              e.currentTarget.style.opacity = '1';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'scale(0.8)';
+                              e.currentTarget.style.opacity = '0';
+                            }}
+                          >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M8 5.14v14l11-7-11-7z" fill="#1A1A1A"/>
+                            </svg>
+                          </button>
                         </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 16, fontWeight: 500 }}>{title}</div>
-                          <div style={{ fontSize: 14, color: '#AFB774' }}>{item.addedAt ? new Date(item.addedAt).toLocaleString() : ''}</div>
+                      </div>
+                      <div style={{ padding: '24px' }}>
+                        <div style={{ 
+                          fontSize: 18, 
+                          fontWeight: 500,
+                          fontFamily: 'Lora, serif',
+                          marginBottom: 8,
+                          color: '#DFD0B8'
+                        }}>
+                          {title}
                         </div>
-                        <button onClick={() => handleRemoveVideo(typeof item.videoId === 'object' ? item.videoId._id : item.videoId)} style={{ color: '#ff4d4f', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 16 }}>Remove</button>
-                      </li>
-                    );
-                  })}
-                </ul>
+                        <div style={{ 
+                          fontSize: 14, 
+                          color: 'rgba(223, 208, 184, 0.6)',
+                          fontFamily: 'Lora, serif',
+                          marginBottom: 16
+                        }}>
+                          {item.addedAt ? new Date(item.addedAt).toLocaleString() : ''}
+                        </div>
+                        <button 
+                          onClick={() => handleRemoveVideo(typeof item.videoId === 'object' ? item.videoId._id : item.videoId)}
+                          style={{ 
+                            color: '#ff4d4f',
+                            background: 'rgba(255, 77, 77, 0.1)',
+                            border: '1px solid rgba(255, 77, 77, 0.2)',
+                            borderRadius: '12px',
+                            padding: '8px 16px',
+                            fontSize: '14px',
+                            fontFamily: 'Lora, serif',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 77, 77, 0.15)';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 77, 77, 0.1)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
-            {!list.isDefault && (
-              <button
-                onClick={async () => {
-                  if (window.confirm('Are you sure you want to delete this list?')) {
-                    try {
-                      await deleteList(list._id);
-                      onClose();
-                      if (onListDeleted) onListDeleted();
-                    } catch (err) {
-                      alert('Failed to delete list');
-                    }
-                  }
-                }}
-                style={{
-                  marginLeft: 16,
-                  color: '#ff4d4f',
-                  background: 'none',
-                  border: '1px solid #ff4d4f',
-                  borderRadius: 8,
-                  padding: '4px 12px',
-                  cursor: 'pointer'
-                }}
-              >
-                Delete List
-              </button>
-            )}
           </>
         )}
       </div>
+
+      <style>
+        {`
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          
+          @keyframes slideUp {
+            0% {
+              opacity: 0;
+              transform: translateY(60px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          @keyframes fadeInUp {
+            0% {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}
+      </style>
     </div>
   );
 };

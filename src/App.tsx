@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavig
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
-import Home from './pages/Home'
 import EnterDetails from './pages/EnterDetails'
 import Login from './pages/Login'
 import Signup from './pages/Signup'

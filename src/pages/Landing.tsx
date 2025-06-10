@@ -5,7 +5,7 @@ const Landing: React.FC = () => {
   const navigate = useNavigate();
   return (
     <div style={{
-      minHeight: '100vh',
+      minHeight: 'calc(100vh - 97px)',
       background: 'linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #141414 100%)',
       color: '#DFD0B8',
       fontFamily: 'Lora, serif',
@@ -41,7 +41,7 @@ const Landing: React.FC = () => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: '100vh',
+        minHeight: 'calc(100vh - 97px)',
         padding: '40px 20px',
         position: 'relative',
         zIndex: 1,

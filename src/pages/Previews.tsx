@@ -185,7 +185,7 @@ const Previews: React.FC = () => {
 
   return (
     <div style={{ 
-      minHeight: '100vh', 
+      minHeight: 'calc(100vh - 97px)', 
       background: 'linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #141414 100%)',
       color: '#DFD0B8', 
       fontFamily: 'Lora, serif',
@@ -395,7 +395,6 @@ const Previews: React.FC = () => {
                 }}>
                   <span>{video?.avgRating ? video.avgRating.toFixed(1) : '0.0'}</span>
                   <div style={{
-                    paddingBottom: '1px',
                     width: '20px',
                     height: '20px',
                     // background: 'linear-gradient(5deg,rgb(0, 0, 0), #FFA500)',
