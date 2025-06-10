@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
+import { useMobileView } from '../context/MobileViewContext';
 
 interface LocationState {
   from: string;
@@ -9,6 +10,7 @@ interface LocationState {
 }
 
 const Signup = () => {
+  const { isMobileView } = useMobileView();
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -159,24 +161,103 @@ const Signup = () => {
     }
   };
 
+  const containerStyle = {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: isMobileView ? '16px' : '20px',
+    position: 'relative' as const,
+    overflow: 'hidden'
+  };
+
+  const formContainerStyle = {
+    width: '100%',
+    maxWidth: isMobileView ? '100%' : '500px',
+    background: 'rgba(20, 20, 20, 0.8)',
+    backdropFilter: 'blur(20px)',
+    borderRadius: isMobileView ? '16px' : '24px',
+    padding: isMobileView ? '24px' : '40px',
+    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
+    animation: 'fadeInUp 0.8s ease-out',
+    position: 'relative' as const,
+    zIndex: 1
+  };
+
+  const titleStyle = {
+    textAlign: 'center' as const,
+    fontSize: isMobileView ? '24px' : '32px',
+    fontWeight: 700,
+    color: '#DFD0B8',
+    marginBottom: isMobileView ? '24px' : '32px',
+    fontFamily: 'Lora, serif'
+  };
+
+  const inputContainerStyle = {
+    marginBottom: isMobileView ? '16px' : '24px'
+  };
+
+  const labelStyle = {
+    display: 'block',
+    color: 'rgba(223, 208, 184, 0.8)',
+    fontSize: isMobileView ? '14px' : '16px',
+    marginBottom: '8px',
+    fontFamily: 'Lora, serif'
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: isMobileView ? '10px 14px' : '12px 16px',
+    background: 'rgba(223, 208, 184, 0.05)',
+    border: '1px solid rgba(223, 208, 184, 0.2)',
+    borderRadius: isMobileView ? '8px' : '12px',
+    color: '#DFD0B8',
+    fontSize: isMobileView ? '14px' : '16px',
+    transition: 'all 0.3s ease',
+    fontFamily: 'Lora, serif'
+  };
+
+  const buttonStyle = {
+    width: '100%',
+    padding: isMobileView ? '12px 0' : '14px 0',
+    background: 'linear-gradient(90deg, #DFD0B8 0%, #AFB774 100%)',
+    color: '#181818',
+    fontWeight: 700,
+    fontSize: isMobileView ? '16px' : '18px',
+    border: 'none',
+    borderRadius: isMobileView ? '8px' : '12px',
+    marginTop: '8px',
+    marginBottom: '16px',
+    cursor: 'pointer',
+    fontFamily: 'Lora, serif',
+    boxShadow: '0 2px 8px rgba(223, 208, 184, 0.13)'
+  };
+
+  const dividerStyle = {
+    textAlign: 'center' as const,
+    margin: isMobileView ? '12px 0' : '16px 0',
+    color: '#DFD0B8',
+    fontFamily: 'Lora, serif'
+  };
+
+  const linkContainerStyle = {
+    textAlign: 'center' as const,
+    marginTop: isMobileView ? '16px' : '24px',
+    color: 'rgba(223, 208, 184, 0.8)',
+    fontFamily: 'Lora, serif',
+    fontSize: isMobileView ? '14px' : '16px'
+  };
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
+    <div style={containerStyle}>
       {/* Animated background elements */}
       <div style={{
         position: 'fixed',
         top: '10%',
         right: '10%',
-        width: '300px',
-        height: '300px',
+        width: isMobileView ? '200px' : '300px',
+        height: isMobileView ? '200px' : '300px',
         background: 'radial-gradient(circle, rgba(223, 208, 184, 0.03) 0%, transparent 70%)',
         borderRadius: '50%',
         animation: 'float 6s ease-in-out infinite',
@@ -186,72 +267,46 @@ const Signup = () => {
         position: 'fixed',
         bottom: '20%',
         left: '5%',
-        width: '200px',
-        height: '200px',
+        width: isMobileView ? '150px' : '200px',
+        height: isMobileView ? '150px' : '200px',
         background: 'radial-gradient(circle, rgba(223, 208, 184, 0.02) 0%, transparent 70%)',
         borderRadius: '50%',
         animation: 'float 8s ease-in-out infinite reverse',
         zIndex: 0
       }} />
 
-
-      <div style={{
-        width: '100%',
-        maxWidth: '500px',
-        background: 'rgba(20, 20, 20, 0.8)',
-        backdropFilter: 'blur(20px)',
-        borderRadius: '24px',
-        padding: '40px',
-        boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
-        animation: 'fadeInUp 0.8s ease-out',
-        position: 'relative',
-        zIndex: 1
-      }}>
-        <h2 style={{
-          textAlign: 'center',
-          fontSize: '32px',
-          fontWeight: 700,
-          color: '#DFD0B8',
-          marginBottom: '32px',
-          fontFamily: 'Lora , serif'
-        }}>
-          Create your account
-        </h2>
+      <div style={formContainerStyle}>
+        <h2 style={titleStyle}>Create your account</h2>
 
         {error && (
           <div style={{
             background: 'rgba(255, 77, 77, 0.1)',
             border: '1px solid rgba(255, 77, 77, 0.2)',
             color: '#ff6b6b',
-            padding: '16px',
-            borderRadius: '12px',
-            marginBottom: '24px',
-            animation: 'fadeIn 0.3s ease-out'
+            padding: isMobileView ? '12px' : '16px',
+            borderRadius: isMobileView ? '8px' : '12px',
+            marginBottom: isMobileView ? '16px' : '24px',
+            animation: 'fadeIn 0.3s ease-out',
+            fontSize: isMobileView ? '14px' : '16px'
           }}>
             {error}
           </div>
         )}
 
         {showCompleteProfile && googleInfo ? (
-          <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(20, 20, 20, 0.8)', borderRadius: '24px', padding: '40px', boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)', position: 'relative', zIndex: 1 }}>
-            <h2 style={{ textAlign: 'center', fontSize: '28px', fontWeight: 700, color: '#DFD0B8', marginBottom: '24px' }}>Complete your profile</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
-              <img src={googleInfo.picture} alt="avatar" style={{ width: 64, height: 64, borderRadius: '50%', marginBottom: 8 }} />
-              <div style={{ color: '#DFD0B8', fontSize: 18 }}>{googleInfo.name}</div>
-              <div style={{ color: '#AFB774', fontSize: 15 }}>{googleInfo.email}</div>
+          <div style={formContainerStyle}>
+            <h2 style={titleStyle}>Complete your profile</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: isMobileView ? 16 : 24 }}>
+              <img src={googleInfo.picture} alt="avatar" style={{ width: isMobileView ? 48 : 64, height: isMobileView ? 48 : 64, borderRadius: '50%', marginBottom: 8 }} />
+              <div style={{ color: '#DFD0B8', fontSize: isMobileView ? 16 : 18 }}>{googleInfo.name}</div>
+              <div style={{ color: '#AFB774', fontSize: isMobileView ? 13 : 15 }}>{googleInfo.email}</div>
             </div>
-            <CompleteProfileForm onSubmit={handleCompleteProfile} error={error} />
+            <CompleteProfileForm onSubmit={handleCompleteProfile} error={error} isMobileView={isMobileView} />
           </div>
         ) : (
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: isMobileView ? '16px' : '24px' }}>
             <div>
-              <label htmlFor="name" style={{
-                display: 'block',
-                color: 'rgba(223, 208, 184, 0.8)',
-                fontSize: '16px',
-                marginBottom: '8px',
-                fontFamily: 'Lora, serif'
-              }}>
+              <label htmlFor="name" style={labelStyle}>
                 Full Name
               </label>
               <input
@@ -261,17 +316,7 @@ const Signup = () => {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'rgba(223, 208, 184, 0.05)',
-                  border: '1px solid rgba(223, 208, 184, 0.2)',
-                  borderRadius: '12px',
-                  color: '#DFD0B8',
-                  fontSize: '16px',
-                  transition: 'all 0.3s ease',
-                  fontFamily: 'Lora, serif'
-                }}
+                style={inputStyle}
                 onFocus={(e) => {
                   e.target.style.background = 'rgba(223, 208, 184, 0.1)';
                   e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
@@ -284,13 +329,7 @@ const Signup = () => {
             </div>
 
             <div>
-              <label htmlFor="username" style={{
-                display: 'block',
-                color: 'rgba(223, 208, 184, 0.8)',
-                fontSize: '16px',
-                marginBottom: '8px',
-                fontFamily: 'Lora, serif'
-              }}>
+              <label htmlFor="username" style={labelStyle}>
                 Username
               </label>
               <input
@@ -306,17 +345,7 @@ const Signup = () => {
                   const value = e.target.value;
                   usernameCheckTimeout.current = setTimeout(() => checkUsername(value), 500);
                 }}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'rgba(223, 208, 184, 0.05)',
-                  border: '1px solid rgba(223, 208, 184, 0.2)',
-                  borderRadius: '12px',
-                  color: '#DFD0B8',
-                  fontSize: '16px',
-                  transition: 'all 0.3s ease',
-                  fontFamily: 'Lora, serif'
-                }}
+                style={inputStyle}
                 onFocus={(e) => {
                   e.target.style.background = 'rgba(223, 208, 184, 0.1)';
                   e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
@@ -352,13 +381,7 @@ const Signup = () => {
             </div>
 
             <div>
-              <label htmlFor="email" style={{
-                display: 'block',
-                color: 'rgba(223, 208, 184, 0.8)',
-                fontSize: '16px',
-                marginBottom: '8px',
-                fontFamily: 'Lora, serif'
-              }}>
+              <label htmlFor="email" style={labelStyle}>
                 Email address
               </label>
               <input
@@ -368,17 +391,7 @@ const Signup = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'rgba(223, 208, 184, 0.05)',
-                  border: '1px solid rgba(223, 208, 184, 0.2)',
-                  borderRadius: '12px',
-                  color: '#DFD0B8',
-                  fontSize: '16px',
-                  transition: 'all 0.3s ease',
-                  fontFamily: 'Lora, serif'
-                }}
+                style={inputStyle}
                 onFocus={(e) => {
                   e.target.style.background = 'rgba(223, 208, 184, 0.1)';
                   e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
@@ -391,13 +404,7 @@ const Signup = () => {
             </div>
 
             <div>
-              <label htmlFor="password" style={{
-                display: 'block',
-                color: 'rgba(223, 208, 184, 0.8)',
-                fontSize: '16px',
-                marginBottom: '8px',
-                fontFamily: 'Lora, serif'
-              }}>
+              <label htmlFor="password" style={labelStyle}>
                 Password
               </label>
               <input
@@ -408,17 +415,7 @@ const Signup = () => {
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'rgba(223, 208, 184, 0.05)',
-                  border: '1px solid rgba(223, 208, 184, 0.2)',
-                  borderRadius: '12px',
-                  color: '#DFD0B8',
-                  fontSize: '16px',
-                  transition: 'all 0.3s ease',
-                  fontFamily: 'Lora, serif'
-                }}
+                style={inputStyle}
                 onFocus={(e) => {
                   e.target.style.background = 'rgba(223, 208, 184, 0.1)';
                   e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
@@ -431,13 +428,7 @@ const Signup = () => {
             </div>
 
             <div>
-              <label htmlFor="bio" style={{
-                display: 'block',
-                color: 'rgba(223, 208, 184, 0.8)',
-                fontSize: '16px',
-                marginBottom: '8px',
-                fontFamily: 'Lora, serif'
-              }}>
+              <label htmlFor="bio" style={labelStyle}>
                 Bio (Optional)
               </label>
               <textarea
@@ -445,19 +436,7 @@ const Signup = () => {
                 name="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'rgba(223, 208, 184, 0.05)',
-                  border: '1px solid rgba(223, 208, 184, 0.2)',
-                  borderRadius: '12px',
-                  color: '#DFD0B8',
-                  fontSize: '16px',
-                  transition: 'all 0.3s ease',
-                  fontFamily: 'Lora, serif',
-                  minHeight: '100px',
-                  resize: 'vertical'
-                }}
+                style={inputStyle}
                 onFocus={(e) => {
                   e.target.style.background = 'rgba(223, 208, 184, 0.1)';
                   e.target.style.borderColor = 'rgba(223, 208, 184, 0.4)';
@@ -472,27 +451,11 @@ const Signup = () => {
 
             <button
               type="submit"
-              style={{
-                width: '100%',
-                padding: '14px 0',
-                background: 'linear-gradient(90deg, #DFD0B8 0%, #AFB774 100%)',
-                color: '#181818',
-                fontWeight: 700,
-                fontSize: '18px',
-                border: 'none',
-                borderRadius: '12px',
-                marginTop: '8px',
-                marginBottom: '16px',
-                cursor: 'pointer',
-                fontFamily: 'Lora, serif',
-                boxShadow: '0 2px 8px rgba(223, 208, 184, 0.13)'
-              }}
+              style={buttonStyle}
             >
               Create Account
             </button>
-            <div style={{ textAlign: 'center', margin: '16px 0', color: '#DFD0B8', fontFamily: 'Lora, serif' }}>
-              or
-            </div>
+            <div style={dividerStyle}>or</div>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <GoogleLogin
                 onSuccess={handleGoogleSignup}
@@ -506,12 +469,7 @@ const Signup = () => {
           </form>
         )}
 
-        <div style={{
-          textAlign: 'center',
-          marginTop: '24px',
-          color: 'rgba(223, 208, 184, 0.8)',
-          fontFamily: 'Lora, serif'
-        }}>
+        <div style={linkContainerStyle}>
           Already have an account?{' '}
           <Link
             to="/login"
@@ -564,13 +522,36 @@ const Signup = () => {
   );
 };
 
-function CompleteProfileForm({ onSubmit, error }: { onSubmit: (username: string, password: string, confirmPassword: string) => void; error: string }) {
+function CompleteProfileForm({ onSubmit, error, isMobileView }: { onSubmit: (username: string, password: string, confirmPassword: string) => void; error: string; isMobileView: boolean }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [usernameAvailable, setUsernameAvailable] = useState<null | boolean>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const usernameCheckTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const inputStyle = {
+    padding: isMobileView ? '10px 14px' : '12px 16px',
+    borderRadius: isMobileView ? '8px' : '12px',
+    border: '1px solid #AFB774',
+    fontSize: isMobileView ? '14px' : '16px',
+    width: '100%',
+    marginBottom: isMobileView ? '12px' : '16px',
+    background: 'rgba(223, 208, 184, 0.05)',
+    color: '#DFD0B8'
+  };
+
+  const buttonStyle = {
+    padding: isMobileView ? '12px' : '14px',
+    borderRadius: isMobileView ? '8px' : '12px',
+    background: '#AFB774',
+    color: '#181818',
+    fontWeight: 700,
+    fontSize: isMobileView ? '16px' : '18px',
+    border: 'none',
+    cursor: 'pointer',
+    width: '100%'
+  };
 
   const checkUsername = async (username: string) => {
     if (!username || username.length < 3) {
@@ -594,23 +575,23 @@ function CompleteProfileForm({ onSubmit, error }: { onSubmit: (username: string,
   };
 
   return (
-    <form onSubmit={e => { e.preventDefault(); onSubmit(username, password, confirmPassword); }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <form onSubmit={e => { e.preventDefault(); onSubmit(username, password, confirmPassword); }} style={{ display: 'flex', flexDirection: 'column', gap: isMobileView ? '12px' : '20px' }}>
       <input type="text" placeholder="Choose a username" value={username} onChange={e => {
         setUsername(e.target.value);
         setUsernameAvailable(null);
         if (usernameCheckTimeout.current) clearTimeout(usernameCheckTimeout.current);
         const value = e.target.value;
         usernameCheckTimeout.current = setTimeout(() => checkUsername(value), 500);
-      }} required style={{ padding: 12, borderRadius: 8, border: '1px solid #AFB774', fontSize: 16 }} />
+      }} required style={inputStyle} />
       {username && (
-        <div style={{ marginTop: 6, fontSize: 14, color: usernameAvailable === null ? '#AFB774' : usernameAvailable ? 'green' : 'red' }}>
+        <div style={{ marginTop: 6, fontSize: isMobileView ? '12px' : '14px', color: usernameAvailable === null ? '#AFB774' : usernameAvailable ? 'green' : 'red' }}>
           {checkingUsername ? 'Checking username...' : usernameAvailable === null ? '' : usernameAvailable ? 'Username is available!' : 'Username is taken.'}
         </div>
       )}
-      <input type="password" placeholder="Set a password" value={password} onChange={e => setPassword(e.target.value)} required style={{ padding: 12, borderRadius: 8, border: '1px solid #AFB774', fontSize: 16 }} />
-      <input type="password" placeholder="Confirm password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required style={{ padding: 12, borderRadius: 8, border: '1px solid #AFB774', fontSize: 16 }} />
-      {error && <div style={{ color: '#ff6b6b', marginBottom: 8 }}>{error}</div>}
-      <button type="submit" style={{ padding: 14, borderRadius: 8, background: '#AFB774', color: '#181818', fontWeight: 700, fontSize: 18, border: 'none', cursor: 'pointer' }}>Complete Signup</button>
+      <input type="password" placeholder="Set a password" value={password} onChange={e => setPassword(e.target.value)} required style={inputStyle} />
+      <input type="password" placeholder="Confirm password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required style={inputStyle} />
+      {error && <div style={{ color: '#ff6b6b', marginBottom: 8, fontSize: isMobileView ? '12px' : '14px' }}>{error}</div>}
+      <button type="submit" style={buttonStyle}>Complete Signup</button>
     </form>
   );
 }

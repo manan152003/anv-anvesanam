@@ -6,6 +6,7 @@ import { getCategoryById } from '../services/categoryService'
 import AddToListModal from '../components/AddToListModal'
 import { getYouTubeThumbnail } from '../utils/youtube'
 import { useAuth } from '../context/AuthContext'
+import { useMobileView } from '../context/MobileViewContext'
 
 interface LocationState {
   videoId?: string
@@ -14,6 +15,7 @@ interface LocationState {
 const Previews: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const { isMobileView } = useMobileView()
   const [video, setVideo] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -102,7 +104,7 @@ const Previews: React.FC = () => {
   if (loading) {
     return (
       <div style={{ 
-        minHeight: '100vh', 
+        minHeight: isMobileView ? '100vh' : '100vh', 
         background: 'linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #141414 100%)',
         display: 'flex',
         alignItems: 'center',
@@ -112,11 +114,11 @@ const Previews: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '20px'
+          gap: isMobileView ? '15px' : '20px'
         }}>
           <div style={{
-            width: '60px',
-            height: '60px',
+            width: isMobileView ? '40px' : '60px',
+            height: isMobileView ? '40px' : '60px',
             border: '3px solid #DFD0B8',
             borderTop: '3px solid transparent',
             borderRadius: '50%',
@@ -125,7 +127,7 @@ const Previews: React.FC = () => {
           <div style={{ 
             color: '#DFD0B8', 
             fontFamily: 'Lora, serif', 
-            fontSize: '24px',
+            fontSize: isMobileView ? '18px' : '24px',
             fontWeight: 300,
             letterSpacing: '0.5px'
           }}>
@@ -139,7 +141,7 @@ const Previews: React.FC = () => {
   if (error || !video) {
     return (
       <div style={{ 
-        minHeight: '100vh', 
+        minHeight: isMobileView ? '100vh' : '100vh', 
         background: 'linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #141414 100%)',
         display: 'flex',
         alignItems: 'center',
@@ -147,17 +149,18 @@ const Previews: React.FC = () => {
       }}>
         <div style={{
           textAlign: 'center',
-          padding: '40px',
+          padding: isMobileView ? '20px' : '40px',
           background: 'rgba(223, 208, 184, 0.05)',
           backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          border: '1px solid rgba(223, 208, 184, 0.1)'
+          borderRadius: isMobileView ? '15px' : '20px',
+          border: '1px solid rgba(223, 208, 184, 0.1)',
+          width: isMobileView ? '90%' : 'auto'
         }}>
           <div style={{ 
             color: '#ff6b6b', 
             fontFamily: 'Lora, serif', 
-            fontSize: '24px',
-            marginBottom: '10px'
+            fontSize: isMobileView ? '18px' : '24px',
+            marginBottom: isMobileView ? '15px' : '10px'
           }}>
             {error || 'Video not found'}
           </div>
@@ -167,10 +170,10 @@ const Previews: React.FC = () => {
               background: 'linear-gradient(135deg, #DFD0B8 0%, #C9B896 100%)',
               color: '#141414',
               border: 'none',
-              padding: '12px 24px',
+              padding: isMobileView ? '10px 20px' : '12px 24px',
               borderRadius: '25px',
               fontFamily: 'Lora, serif',
-              fontSize: '16px',
+              fontSize: isMobileView ? '14px' : '16px',
               fontWeight: 600,
               cursor: 'pointer',
               transition: 'all 0.3s ease'
@@ -185,44 +188,48 @@ const Previews: React.FC = () => {
 
   return (
     <div style={{ 
-      minHeight: 'calc(100vh - 97px)', 
+      minHeight: isMobileView ? '100vh' : 'calc(100vh - 97px)', 
       background: 'linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #141414 100%)',
       color: '#DFD0B8', 
       fontFamily: 'Lora, serif',
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Animated background elements */}
-      <div style={{
-        position: 'fixed',
-        top: '10%',
-        right: '10%',
-        width: '300px',
-        height: '300px',
-        background: 'radial-gradient(circle, rgba(223, 208, 184, 0.03) 0%, transparent 70%)',
-        borderRadius: '50%',
-        animation: 'float 6s ease-in-out infinite',
-        zIndex: 0
-      }} />
-      <div style={{
-        position: 'fixed',
-        bottom: '20%',
-        left: '5%',
-        width: '200px',
-        height: '200px',
-        background: 'radial-gradient(circle, rgba(223, 208, 184, 0.02) 0%, transparent 70%)',
-        borderRadius: '50%',
-        animation: 'float 8s ease-in-out infinite reverse',
-        zIndex: 0
-      }} />
+      {/* Animated background elements - hidden on mobile */}
+      {!isMobileView && (
+        <>
+          <div style={{
+            position: 'fixed',
+            top: '10%',
+            right: '10%',
+            width: '300px',
+            height: '300px',
+            background: 'radial-gradient(circle, rgba(223, 208, 184, 0.03) 0%, transparent 70%)',
+            borderRadius: '50%',
+            animation: 'float 6s ease-in-out infinite',
+            zIndex: 0
+          }} />
+          <div style={{
+            position: 'fixed',
+            bottom: '20%',
+            left: '5%',
+            width: '200px',
+            height: '200px',
+            background: 'radial-gradient(circle, rgba(223, 208, 184, 0.02) 0%, transparent 70%)',
+            borderRadius: '50%',
+            animation: 'float 8s ease-in-out infinite reverse',
+            zIndex: 0
+          }} />
+        </>
+      )}
 
       {/* Main Content Container */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: 'calc(100vh - 97px)',
-        padding: '40px 20px',
+        minHeight: isMobileView ? '100vh' : 'calc(100vh - 97px)',
+        padding: isMobileView ? '0' : '40px 20px',
         position: 'relative',
         zIndex: 1
       }}>
@@ -230,12 +237,12 @@ const Previews: React.FC = () => {
         <div style={{
           position: 'relative',
           width: '100%',
-          maxWidth: '1400px',
-          background: 'rgba(20, 20, 20, 0.8)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '24px',
+          maxWidth: isMobileView ? '100%' : '1400px',
+          background: isMobileView ? 'transparent' : 'rgba(20, 20, 20, 0.8)',
+          backdropFilter: isMobileView ? 'none' : 'blur(20px)',
+          borderRadius: isMobileView ? '0' : '24px',
           overflow: 'hidden',
-          boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
+          boxShadow: isMobileView ? 'none' : '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
           transition: 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           animation: 'slideUp 0.8s ease-out'
         }}>
@@ -251,11 +258,11 @@ const Previews: React.FC = () => {
               aria-label="Add to list"
               style={{
                 position: 'absolute',
-                top: '30px',
-                right: '30px',
+                top: isMobileView ? '12px' : '30px',
+                right: isMobileView ? '12px' : '30px',
                 borderRadius: '50%',
-                width: '70px',
-                height: '70px',
+                width: isMobileView ? '44px' : '70px',
+                height: isMobileView ? '44px' : '70px',
                 background: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(10px)',
                 border: 'none',
@@ -279,7 +286,7 @@ const Previews: React.FC = () => {
                 e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)'
               }}
             >
-              <svg width="32" height="32" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width={isMobileView ? "20" : "32"} height={isMobileView ? "20" : "32"} viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M15 6.25V23.75M6.25 15H23.75" stroke="#1A1A1A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
@@ -305,27 +312,20 @@ const Previews: React.FC = () => {
               }}
               title="Open on YouTube"
             />
-
-            {/* Enhanced Gradient Overlay */}
-            <div style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '60%',
-              background: 'linear-gradient(180deg, rgba(20,20,20,0) 0%, rgba(20,20,20,0.3) 30%, rgba(10,10,10,0.8) 80%, rgba(10,10,10,0.95) 100%)',
-              zIndex: 2
-            }} />
           </div>
 
-          {/* Content Section */}
+          {/* Content Section - Redesigned for Mobile */}
           <div style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: '60px 50px 40px',
-            zIndex: 3
+            padding: isMobileView ? '16px' : '60px 50px 40px',
+            background: isMobileView ? 'rgba(20, 20, 20, 0.95)' : 'transparent',
+            position: isMobileView ? 'relative' : 'absolute',
+            bottom: isMobileView ? 'auto' : 0,
+            left: isMobileView ? 'auto' : 0,
+            right: isMobileView ? 'auto' : 0,
+            zIndex: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: isMobileView ? '12px' : '20px'
           }}>
             {/* Category Badge */}
             {category && (
@@ -334,15 +334,15 @@ const Previews: React.FC = () => {
                 background: 'rgba(223, 208, 184, 0.15)',
                 backdropFilter: 'blur(5px)',
                 color: '#DFD0B8',
-                padding: '8px 20px',
+                padding: isMobileView ? '4px 12px' : '8px 20px',
                 borderRadius: '25px',
-                fontSize: '14px',
+                fontSize: isMobileView ? '11px' : '14px',
                 fontWeight: 600,
                 letterSpacing: '0.5px',
                 textTransform: 'uppercase',
-                marginBottom: '20px',
                 border: '1px solid rgba(223, 208, 184, 0.2)',
-                animation: 'fadeInUp 0.8s ease-out 0.3s both'
+                animation: 'fadeInUp 0.8s ease-out 0.3s both',
+                alignSelf: 'flex-start'
               }}>
                 {category}
               </div>
@@ -351,12 +351,12 @@ const Previews: React.FC = () => {
             {/* Title */}
             <h1 style={{
               fontFamily: 'Bellefair, serif',
-              fontSize: 'clamp(32px, 5vw, 72px)',
+              fontSize: isMobileView ? 'clamp(20px, 7vw, 32px)' : 'clamp(32px, 5vw, 72px)',
               fontWeight: 400,
-              margin: '0 0 20px 0',
+              margin: 0,
               color: '#DFD0B8',
-              lineHeight: 1.1,
-              textShadow: '0 4px 20px rgba(0, 0, 0, 0.8)',
+              lineHeight: 1.2,
+              textShadow: isMobileView ? 'none' : '0 4px 20px rgba(0, 0, 0, 0.8)',
               animation: 'fadeInUp 0.8s ease-out 0.1s both'
             }}>
               {video.title_youtube || video.title}
@@ -365,23 +365,23 @@ const Previews: React.FC = () => {
             {/* Metadata Row */}
             <div style={{
               display: 'flex',
+              flexDirection: isMobileView ? 'column' : 'row',
               justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '20px',
+              alignItems: isMobileView ? 'flex-start' : 'center',
+              gap: isMobileView ? '8px' : '20px',
               animation: 'fadeInUp 0.8s ease-out 0.5s both'
             }}>
               {/* Left metadata */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '20px',
-                fontSize: '18px',
+                gap: isMobileView ? '8px' : '20px',
+                fontSize: isMobileView ? '13px' : '18px',
                 color: 'rgba(223, 208, 184, 0.8)',
                 fontWeight: 400
               }}>
                 <span style={{
-                  padding: '6px 16px',
+                  padding: isMobileView ? '3px 10px' : '6px 16px',
                   background: 'rgba(223, 208, 184, 0.1)',
                   borderRadius: '20px',
                   backdropFilter: 'blur(5px)'
@@ -395,14 +395,13 @@ const Previews: React.FC = () => {
                 }}>
                   <span>{video?.avgRating ? video.avgRating.toFixed(1) : '0.0'}</span>
                   <div style={{
-                    width: '20px',
-                    height: '20px',
-                    // background: 'linear-gradient(5deg,rgb(0, 0, 0), #FFA500)',
+                    width: isMobileView ? '14px' : '20px',
+                    height: isMobileView ? '14px' : '20px',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '12px'
+                    fontSize: isMobileView ? '9px' : '12px'
                   }}>
                     ★
                   </div>
@@ -414,7 +413,7 @@ const Previews: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                fontSize: '16px',
+                fontSize: isMobileView ? '13px' : '16px',
                 color: 'rgba(223, 208, 184, 0.7)'
               }}>
                 <span>submitted by</span>
@@ -423,7 +422,7 @@ const Previews: React.FC = () => {
                     fontWeight: 700,
                     color: '#DFD0B8',
                     cursor: 'pointer',
-                    padding: '5px 14px',
+                    padding: isMobileView ? '3px 10px' : '5px 14px',
                     background: 'rgba(223, 208, 184, 0.1)',
                     borderRadius: '20px',
                     transition: 'all 0.3s ease',

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useMobileView } from '../context/MobileViewContext';
 import { getUserLists } from '../services/listService';
 import { getLatestSubmissionByVideoId, getSubmissionsByUser, getVideoById } from '../services/videoService';
 import { getFollowingUsers } from '../services/userService';
@@ -11,6 +12,7 @@ import EditProfileModal from '../components/EditProfileModal';
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { isMobileView } = useMobileView();
   const [lists, setLists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -304,14 +306,14 @@ const Profile: React.FC = () => {
     );
   }
 
-  // Modern Video Card Component
+  // Modern Video Card Component with mobile support
   const VideoCard = ({ video, index }: { video: any, index: number }) => (
     <div
       className="video-card"
       style={{
-        width: '320px',
-        height: '180px',
-        borderRadius: '24px',
+        width: isMobileView ? '280px' : '320px',
+        height: isMobileView ? '157.5px' : '180px',
+        borderRadius: isMobileView ? '16px' : '24px',
         overflow: 'hidden',
         background: 'rgba(20, 20, 20, 0.8)',
         backdropFilter: 'blur(20px)',
@@ -329,7 +331,7 @@ const Profile: React.FC = () => {
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          borderRadius: '24px'
+          borderRadius: isMobileView ? '16px' : '24px'
         }}
       />
     </div>
@@ -361,16 +363,18 @@ const Profile: React.FC = () => {
         {/* Profile Header */}
         <div style={{
           display: 'flex',
-          alignItems: 'flex-start',
-          gap: '40px',
-          marginTop: '60px',
-          marginLeft: '80px',
+          flexDirection: isMobileView ? 'column' : 'row',
+          alignItems: isMobileView ? 'center' : 'flex-start',
+          gap: isMobileView ? '24px' : '40px',
+          marginTop: isMobileView ? '40px' : '60px',
+          marginLeft: isMobileView ? '20px' : '80px',
+          marginRight: isMobileView ? '20px' : '80px',
           animation: 'slideInLeft 0.8s ease-out'
         }}>
           {/* Avatar */}
           <div style={{
-            width: '160px',
-            height: '160px',
+            width: isMobileView ? '120px' : '160px',
+            height: isMobileView ? '120px' : '160px',
             borderRadius: '50%',
             overflow: 'hidden',
             background: 'rgba(26, 26, 26, 0.8)',
@@ -395,8 +399,8 @@ const Profile: React.FC = () => {
               src={user.avatarUrl}
               alt="avatar"
               style={{
-                width: '140px',
-                height: '140px',
+                width: isMobileView ? '100px' : '140px',
+                height: isMobileView ? '100px' : '140px',
                 borderRadius: '50%',
                 objectFit: 'cover'
               }}
@@ -404,10 +408,14 @@ const Profile: React.FC = () => {
           </div>
 
           {/* User Info */}
-          <div style={{ marginTop: '16px', flex: 1 }}>
+          <div style={{ 
+            marginTop: isMobileView ? '0' : '16px', 
+            flex: 1,
+            textAlign: isMobileView ? 'center' : 'left'
+          }}>
             <div style={{
               fontFamily: 'Lora, serif',
-              fontSize: '56px',
+              fontSize: isMobileView ? '36px' : '56px',
               color: '#DFD0B8',
               fontWeight: 700,
               marginBottom: '8px',
@@ -416,7 +424,7 @@ const Profile: React.FC = () => {
               {user.name}
             </div>
             <div style={{
-              fontSize: '22px',
+              fontSize: isMobileView ? '18px' : '22px',
               color: 'rgba(223, 208, 184, 0.7)',
               marginBottom: '20px'
             }}>
@@ -424,17 +432,23 @@ const Profile: React.FC = () => {
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+            <div style={{ 
+              display: 'flex', 
+              gap: isMobileView ? '12px' : '16px', 
+              marginBottom: '20px',
+              flexWrap: isMobileView ? 'wrap' : 'nowrap',
+              justifyContent: isMobileView ? 'center' : 'flex-start'
+            }}>
               <button
                 style={{
                   fontFamily: 'Lora, serif',
-                  fontSize: '16px',
+                  fontSize: isMobileView ? '14px' : '16px',
                   background: 'rgba(223, 208, 184, 0.15)',
                   backdropFilter: 'blur(10px)',
                   color: '#DFD0B8',
                   border: '1px solid rgba(223, 208, 184, 0.3)',
                   borderRadius: '12px',
-                  padding: '12px 24px',
+                  padding: isMobileView ? '10px 20px' : '12px 24px',
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
@@ -457,13 +471,13 @@ const Profile: React.FC = () => {
               <button
                 style={{
                   fontFamily: 'Lora, serif',
-                  fontSize: '16px',
+                  fontSize: isMobileView ? '14px' : '16px',
                   background: 'rgba(223, 208, 184, 0.15)',
                   backdropFilter: 'blur(10px)',
                   color: '#DFD0B8',
                   border: '1px solid rgba(223, 208, 184, 0.3)',
                   borderRadius: '12px',
-                  padding: '12px 24px',
+                  padding: isMobileView ? '10px 20px' : '12px 24px',
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
@@ -484,20 +498,6 @@ const Profile: React.FC = () => {
                     navigator.clipboard.writeText(profileUrl).then(() => {
                       alert('Profile link copied to clipboard!');
                     }).catch(console.error);
-                    // Fallback for browsers that don't support clipboard API
-                    if (!navigator.clipboard) {
-                      const textArea = document.createElement('textarea');
-                      textArea.value = profileUrl;
-                      document.body.appendChild(textArea);
-                      textArea.select();
-                      try {
-                        document.execCommand('copy');
-                        alert('Profile link copied to clipboard!');
-                      } catch (err) {
-                        console.error('Failed to copy text: ', err);
-                      }
-                      document.body.removeChild(textArea);
-                    }
                   }
                 }}
                 onMouseEnter={e => {
@@ -521,13 +521,13 @@ const Profile: React.FC = () => {
               <button
                 style={{
                   fontFamily: 'Lora, serif',
-                  fontSize: '16px',
+                  fontSize: isMobileView ? '14px' : '16px',
                   background: 'rgba(175, 183, 116, 0.15)',
                   backdropFilter: 'blur(10px)',
                   color: '#AFB774',
                   border: '1px solid rgba(175, 183, 116, 0.3)',
                   borderRadius: '12px',
-                  padding: '12px 24px',
+                  padding: isMobileView ? '10px 20px' : '12px 24px',
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
@@ -550,7 +550,7 @@ const Profile: React.FC = () => {
             </div>
 
             <div style={{
-              fontSize: '18px',
+              fontSize: isMobileView ? '16px' : '18px',
               color: 'rgba(223, 208, 184, 0.9)',
               marginBottom: '8px',
               lineHeight: 1.5
@@ -558,7 +558,7 @@ const Profile: React.FC = () => {
               {user.bio}
             </div>
             <div style={{
-              fontSize: '16px',
+              fontSize: isMobileView ? '14px' : '16px',
               color: 'rgba(223, 208, 184, 0.6)'
             }}>
               Member since 2025
@@ -567,10 +567,13 @@ const Profile: React.FC = () => {
 
           {/* Stats */}
           <div style={{
-            display: 'flex',
-            gap: '32px',
+            display: 'grid',
+            gridTemplateColumns: isMobileView ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+            gap: isMobileView ? '16px' : '32px',
             marginTop: '24px',
-            animation: 'fadeInUp 0.8s ease-out 0.3s both'
+            animation: 'fadeInUp 0.8s ease-out 0.3s both',
+            flexWrap: isMobileView ? 'wrap' : 'nowrap',
+            justifyContent: isMobileView ? 'center' : 'flex-start'
           }}>
             {[
               { label: 'Videos Added', value: submissionCount },
@@ -583,17 +586,17 @@ const Profile: React.FC = () => {
                 className="stat-card"
                 style={{
                   textAlign: 'center',
-                  padding: '24px 20px',
+                  padding: isMobileView ? '16px 12px' : '24px 20px',
                   background: 'rgba(223, 208, 184, 0.05)',
                   backdropFilter: 'blur(10px)',
                   borderRadius: '16px',
                   border: '1px solid rgba(223, 208, 184, 0.1)',
-                  minWidth: '120px',
+                  minWidth: isMobileView ? '100px' : '120px',
                   cursor: 'pointer'
                 }}
               >
                 <div style={{
-                  fontSize: '36px',
+                  fontSize: isMobileView ? '28px' : '36px',
                   fontWeight: 700,
                   color: '#DFD0B8',
                   marginBottom: '8px',
@@ -602,7 +605,7 @@ const Profile: React.FC = () => {
                   {stat.value}
                 </div>
                 <div style={{
-                  fontSize: '14px',
+                  fontSize: isMobileView ? '12px' : '14px',
                   color: 'rgba(223, 208, 184, 0.7)',
                   fontWeight: 500,
                   letterSpacing: '0.5px'
@@ -616,14 +619,14 @@ const Profile: React.FC = () => {
 
         {/* Favs Section */}
         <div style={{
-          marginTop: '80px',
-          marginLeft: '48px',
-          marginRight: '48px',
+          marginTop: isMobileView ? '40px' : '80px',
+          marginLeft: isMobileView ? '20px' : '48px',
+          marginRight: isMobileView ? '20px' : '48px',
           animation: 'fadeInUp 0.8s ease-out 0.5s both'
         }}>
           <div style={{
             fontFamily: 'Lora, serif',
-            fontSize: '40px',
+            fontSize: isMobileView ? '32px' : '40px',
             fontWeight: 700,
             color: '#DFD0B8',
             marginBottom: '32px',
@@ -631,17 +634,23 @@ const Profile: React.FC = () => {
           }}>
             Favs
           </div>
-          <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+          <div style={{ 
+            display: 'flex', 
+            gap: isMobileView ? '16px' : '32px', 
+            flexWrap: 'wrap',
+            justifyContent: isMobileView ? 'center' : 'flex-start'
+          }}>
             {favVideos.length === 0 ? (
               <div style={{
-                padding: '40px',
+                padding: isMobileView ? '24px' : '40px',
                 background: 'rgba(175, 183, 116, 0.05)',
                 backdropFilter: 'blur(10px)',
                 borderRadius: '16px',
                 border: '1px solid rgba(175, 183, 116, 0.1)',
                 color: 'rgba(175, 183, 116, 0.8)',
                 fontFamily: 'Lora, serif',
-                fontSize: '18px'
+                fontSize: isMobileView ? '16px' : '18px',
+                width: isMobileView ? '100%' : 'auto'
               }}>
                 No favorites yet. Start adding videos to see them here!
               </div>
@@ -655,14 +664,14 @@ const Profile: React.FC = () => {
 
         {/* Recent Activity Section */}
         <div style={{
-          marginTop: '64px',
-          marginLeft: '48px',
-          marginRight: '48px',
+          marginTop: isMobileView ? '40px' : '64px',
+          marginLeft: isMobileView ? '20px' : '48px',
+          marginRight: isMobileView ? '20px' : '48px',
           animation: 'fadeInUp 0.8s ease-out 0.7s both'
         }}>
           <div style={{
             fontFamily: 'Lora, serif',
-            fontSize: '40px',
+            fontSize: isMobileView ? '32px' : '40px',
             fontWeight: 700,
             color: '#DFD0B8',
             marginBottom: '32px',
@@ -672,24 +681,26 @@ const Profile: React.FC = () => {
           </div>
           <div style={{
             display: 'flex',
-            gap: '32px',
+            gap: isMobileView ? '16px' : '32px',
             flexWrap: 'nowrap',
             overflowX: 'auto',
             whiteSpace: 'nowrap',
             paddingBottom: 8,
             scrollbarColor: '#DFD0B8 #1a1a1a',
-            scrollbarWidth: 'thin'
+            scrollbarWidth: 'thin',
+            justifyContent: isMobileView ? 'flex-start' : 'flex-start'
           }}>
             {recentActivities.length === 0 ? (
               <div style={{
-                padding: '40px',
+                padding: isMobileView ? '24px' : '40px',
                 background: 'rgba(175, 183, 116, 0.05)',
                 backdropFilter: 'blur(10px)',
                 borderRadius: '16px',
                 border: '1px solid rgba(175, 183, 116, 0.1)',
                 color: 'rgba(175, 183, 116, 0.8)',
                 fontFamily: 'Lora, serif',
-                fontSize: '18px'
+                fontSize: isMobileView ? '16px' : '18px',
+                width: isMobileView ? '100%' : 'auto'
               }}>
                 No recent activity. Start exploring and rating videos!
               </div>
@@ -705,15 +716,15 @@ const Profile: React.FC = () => {
 
         {/* Following Section */}
         <div style={{
-          marginTop: '64px',
-          marginLeft: '48px',
-          marginRight: '48px',
-          marginBottom: '80px',
+          marginTop: isMobileView ? '40px' : '64px',
+          marginLeft: isMobileView ? '20px' : '48px',
+          marginRight: isMobileView ? '20px' : '48px',
+          marginBottom: isMobileView ? '40px' : '80px',
           animation: 'fadeInUp 0.8s ease-out 0.9s both'
         }}>
           <div style={{
             fontFamily: 'Lora, serif',
-            fontSize: '40px',
+            fontSize: isMobileView ? '32px' : '40px',
             fontWeight: 700,
             color: '#DFD0B8',
             marginBottom: '32px',
@@ -723,20 +734,22 @@ const Profile: React.FC = () => {
           </div>
           <div style={{
             display: 'flex',
-            gap: '24px',
+            gap: isMobileView ? '16px' : '24px',
             flexWrap: 'wrap',
-            maxWidth: '1200px'
+            maxWidth: '1200px',
+            justifyContent: isMobileView ? 'center' : 'flex-start'
           }}>
             {followingUsers.length === 0 ? (
               <div style={{
-                padding: '40px',
+                padding: isMobileView ? '24px' : '40px',
                 background: 'rgba(175, 183, 116, 0.05)',
                 backdropFilter: 'blur(10px)',
                 borderRadius: '16px',
                 border: '1px solid rgba(175, 183, 116, 0.1)',
                 color: 'rgba(175, 183, 116, 0.8)',
                 fontFamily: 'Lora, serif',
-                fontSize: '18px'
+                fontSize: isMobileView ? '16px' : '18px',
+                width: isMobileView ? '100%' : 'auto'
               }}>
                 Not following anyone yet. Discover and follow interesting people!
               </div>
@@ -745,8 +758,8 @@ const Profile: React.FC = () => {
                 <div
                   key={f._id || idx}
                   style={{
-                    width: '80px',
-                    height: '80px',
+                    width: isMobileView ? '60px' : '80px',
+                    height: isMobileView ? '60px' : '80px',
                     borderRadius: '50%',
                     background: 'rgba(223, 208, 184, 0.1)',
                     backdropFilter: 'blur(10px)',
