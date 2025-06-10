@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { MobileViewProvider, useMobileView } from './context/MobileViewContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import EnterDetails from './pages/EnterDetails'
 import Login from './pages/Login'
@@ -15,11 +16,13 @@ import Landing from './pages/Landing'
 import Header from './components/Header'
 import AddVideoModal from './components/AddVideoModal'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import Footer from './components/Footer'
 
 const queryClient = new QueryClient()
 
 function AppRoutes() {
   const { isAuthenticated, user, isLoading } = useAuth()
+  const { isMobileView } = useMobileView()
   const [addModalOpen, setAddModalOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -37,8 +40,18 @@ function AppRoutes() {
     navigate('/enter-details', { state: { url } })
   }
 
+  const rootStyle = {
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column' as const,
+  };
+
+  const mainStyle = {
+    flex: 1,
+  };
+
   return (
-    <>
+    <div style={rootStyle}>
       <Header
         isAuthenticated={isAuthenticated}
         user={user}
@@ -49,33 +62,36 @@ function AppRoutes() {
         onClose={() => setAddModalOpen(false)}
         onSubmit={handleAddVideo}
       />
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route
-          path="/enter-details"
-          element={
-            <ProtectedRoute>
-              <EnterDetails />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <Previews />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/discover" element={<Discover />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/lists/:listId" element={<ListView />} />
-        <Route path="/profile" element={<ProfileRouter />} />
-        <Route path="/profile/:username" element={<ProfileRouter />} />
-      </Routes>
-    </>
+      <main style={mainStyle}>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/enter-details"
+            element={
+              <ProtectedRoute>
+                <EnterDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <Previews />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/lists/:listId" element={<ListView />} />
+          <Route path="/profile" element={<ProfileRouter />} />
+          <Route path="/profile/:username" element={<ProfileRouter />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
   )
 }
 
@@ -84,9 +100,11 @@ function App() {
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <Router>
-            <AppRoutes />
-          </Router>
+          <MobileViewProvider>
+            <Router>
+              <AppRoutes />
+            </Router>
+          </MobileViewProvider>
         </AuthProvider>
       </QueryClientProvider>
     </GoogleOAuthProvider>

@@ -11,11 +11,22 @@ interface VideoSubmission {
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// Helper function to extract video ID from YouTube URL
+const extractVideoId = (url: string): string | null => {
+  // Handle youtu.be URLs
+  if (url.includes('youtu.be')) {
+    const match = url.match(/youtu\.be\/([\w-]+)/);
+    return match ? match[1] : null;
+  }
+  // Handle standard YouTube URLs
+  const match = url.match(/[?&]v=([\w-]+)/);
+  return match ? match[1] : null;
+};
+
 export const submitVideo = async (submission: VideoSubmission): Promise<string> => {
   try {
-    // Extract YouTube video ID
-    const videoIdMatch = submission.url.match(/v=([\w-]+)/);
-    const youtubeVideoId = videoIdMatch ? videoIdMatch[1] : null;
+    // Extract YouTube video ID using the helper function
+    const youtubeVideoId = extractVideoId(submission.url);
     if (!youtubeVideoId) throw new Error('Invalid YouTube URL');
 
     // First, get the category ID from the category name

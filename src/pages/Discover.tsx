@@ -6,6 +6,7 @@ import AddToListModal from '../components/AddToListModal';
 import { useAuth } from '../context/AuthContext';
 import { useSwipeable } from 'react-swipeable';
 import { getYouTubeThumbnail } from '../utils/youtube';
+import { useMobileView } from '../context/MobileViewContext';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -39,6 +40,11 @@ const TABS = [
   { label: 'TRENDING THIS WEEK', value: 'trending' },
 ];
 
+const MOBILE_TABS = [
+  { label: 'SUNDAY PICKS', value: 'sunday' },
+  { label: 'TRENDING & FRIENDS', value: 'trending' },
+];
+
 const SORT_OPTIONS = [
   { label: 'DEFAULT', value: 'default' },
   { label: 'NEWEST', value: 'newest' },
@@ -47,6 +53,7 @@ const SORT_OPTIONS = [
 ];
 
 const Discover: React.FC = () => {
+  const { isMobileView } = useMobileView();
   const [videos, setVideos] = useState<Video[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -403,32 +410,23 @@ const Discover: React.FC = () => {
               setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
             }}
             style={{
-              padding: '16px 32px',
-              fontSize: '18px',
+              padding: '12px 24px',
+              fontSize: '16px',
               fontFamily: 'Lora, serif',
               color: '#DFD0B8',
               background: 'rgba(223, 208, 184, 0.1)',
               border: '1px solid rgba(223, 208, 184, 0.2)',
-              borderRadius: '16px',
+              borderRadius: '12px',
               cursor: 'pointer',
-              transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-              backdropFilter: 'blur(10px)',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-              ':hover': {
-                background: 'rgba(223, 208, 184, 0.15)',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)'
-              }
+              transition: 'all 0.3s ease'
             }}
             onMouseEnter={e => {
               e.currentTarget.style.background = 'rgba(223, 208, 184, 0.15)';
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.25)';
             }}
             onMouseLeave={e => {
               e.currentTarget.style.background = 'rgba(223, 208, 184, 0.1)';
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
             }}
           >
             Do Again
@@ -868,7 +866,437 @@ const Discover: React.FC = () => {
     };
   }, []);
 
-  // Main Render
+  // Mobile-specific VideoCard component
+  const MobileVideoCard = ({ video }: { video: Video }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const hasDescription = Boolean(video.bestDescription);
+
+    return (
+      <div
+        style={{
+          width: '100%',
+          aspectRatio: '16/9',
+          borderRadius: 16,
+          overflow: 'hidden',
+          background: '#1A1A1A',
+          border: '2px solid #848484',
+          position: 'relative',
+          cursor: 'pointer',
+          marginBottom: 16,
+        }}
+        onClick={() => navigate('/home', { state: { videoId: video._id } })}
+        tabIndex={0}
+        aria-label={video.title_youtube}
+        onKeyDown={e => { if (e.key === 'Enter') navigate('/home', { state: { videoId: video._id } }); }}
+      >
+        <img
+          src={getThumbnail(video)}
+          alt={video.title_youtube || 'Untitled'}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: 16,
+            display: 'block',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: '12px',
+            background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+            color: '#DFD0B8',
+            fontFamily: 'Lora, serif',
+            fontSize: '16px',
+            fontWeight: 600,
+            lineHeight: 1.2,
+          }}
+        >
+          {video.title_youtube || 'Untitled'}
+        </div>
+      </div>
+    );
+  };
+
+  // Mobile Sunday Picks Layout
+  const MobileSundayPicks = () => {
+    if (!Array.isArray(sundayStack)) {
+      return <div style={{ textAlign: 'center', color: '#ff4d4f', fontSize: 18, padding: '32px 16px' }}>Failed to load Sunday Picks</div>;
+    }
+
+    if (sundayStack.length === 0) {
+      return (
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          minHeight: '50vh',
+          padding: '32px 16px',
+          gap: '24px'
+        }}>
+          <div style={{ 
+            fontSize: 24, 
+            fontFamily: 'Bellefair, serif', 
+            color: '#DFD0B8', 
+            textAlign: 'center',
+            lineHeight: 1.4
+          }}>
+            That's it for today! Come back tomorrow for more curated picks.
+          </div>
+          <button
+            onClick={() => {
+              setSundayStack(videos);
+              setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
+            }}
+            style={{
+              padding: '12px 24px',
+              fontSize: '16px',
+              fontFamily: 'Lora, serif',
+              color: '#DFD0B8',
+              background: 'rgba(223, 208, 184, 0.1)',
+              border: '1px solid rgba(223, 208, 184, 0.2)',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(223, 208, 184, 0.15)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(223, 208, 184, 0.1)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            Do Again
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        padding: '16px',
+        minHeight: '70vh',
+        width: '100%',
+      }}>
+        <div style={{ 
+          fontSize: 18, 
+          fontFamily: 'Lora, serif', 
+          marginBottom: 24, 
+          color: '#DFD0B8', 
+          opacity: 0.9,
+          textAlign: 'center',
+          width: '100%',
+        }}>
+          specially curated just for you.
+        </div>
+        <div style={{ 
+          width: '100%', 
+          maxWidth: '400px',
+          position: 'relative',
+          marginBottom: 24,
+          display: 'flex',
+          justifyContent: 'center',
+          height: '280px', // Fixed height for stack container
+        }}>
+          {/* Next video peeking out */}
+          {sundayStack.length > 1 && (
+            <div style={{
+              position: 'absolute',
+              top: '36px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '92%',
+              zIndex: 1,
+              opacity: 0.7,
+              filter: 'brightness(0.8)',
+            }}>
+              <MobileVideoCard video={sundayStack[1]} />
+            </div>
+          )}
+          {/* Current video */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '100%',
+            zIndex: 2,
+          }}>
+            <MobileVideoCard video={sundayStack[0]} />
+          </div>
+        </div>
+        <div style={{ 
+          fontSize: 16, 
+          fontFamily: 'Lora, serif', 
+          color: '#DFD0B8', 
+          opacity: 0.7, 
+          marginTop: 16,
+          textAlign: 'center',
+          width: '100%',
+        }}>
+          swipe right to watch, left to discard
+        </div>
+      </div>
+    );
+  };
+
+  // Combined Trending & Friends Layout
+  const MobileTrendingAndFriends = () => {
+    const [currentIdx, setCurrentIdx] = useState(0);
+    const trendingVideos = videos.slice(0, 8);
+
+    useEffect(() => {
+      if (tab !== 'trending' || trendingVideos.length < 2) return;
+      const interval = setInterval(() => {
+        setCurrentIdx(prev => (prev + 1) % trendingVideos.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }, [tab, trendingVideos.length]);
+
+    return (
+      <div style={{ padding: '16px' }}>
+        {/* Trending Section */}
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{ 
+            fontSize: '20px', 
+            fontFamily: 'Bellefair, serif',
+            color: '#DFD0B8',
+            marginBottom: '16px',
+            padding: '0 8px'
+          }}>
+            Trending Now
+          </div>
+          <div style={{ 
+            width: '100%', 
+            aspectRatio: '16/9',
+            borderRadius: 16,
+            overflow: 'hidden',
+            position: 'relative',
+            marginBottom: 16
+          }}>
+            <MobileVideoCard video={trendingVideos[currentIdx]} />
+          </div>
+          <div style={{ 
+            display: 'flex',
+            gap: 8,
+            justifyContent: 'center',
+            marginTop: 16
+          }}>
+            {trendingVideos.slice(0, 4).map((_, idx) => (
+              <div
+                key={idx}
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: currentIdx === idx ? '#DFD0B8' : 'rgba(223, 208, 184, 0.3)',
+                  transition: 'background 0.3s ease'
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Friends Section */}
+        <div>
+          <div style={{ 
+            fontSize: '20px', 
+            fontFamily: 'Bellefair, serif',
+            color: '#DFD0B8',
+            marginBottom: '16px',
+            padding: '0 8px'
+          }}>
+            Friends Activity
+          </div>
+          {friendsFeed.length === 0 ? (
+            <div style={{ 
+              textAlign: 'center', 
+              fontSize: 16, 
+              color: '#DFD0B8', 
+              padding: '24px 16px',
+              background: 'rgba(223, 208, 184, 0.05)',
+              borderRadius: '12px',
+              border: '1px solid rgba(223, 208, 184, 0.1)'
+            }}>
+              No friends activity found.
+            </div>
+          ) : (
+            friendsFeed.map(feed => (
+              <div key={feed.friend.id} style={{ marginBottom: 24 }}>
+                <div style={{ 
+                  color: '#A0A0A0', 
+                  fontSize: 16, 
+                  marginBottom: 8,
+                  padding: '0 8px'
+                }}>
+                  @{feed.friend.username} <span style={{ fontWeight: 400, fontSize: 14 }}>recently added</span>
+                </div>
+                <div style={{ borderBottom: '1px solid #444', margin: '8px 0 16px 0' }} />
+                {feed.recentVideos.map(video => (
+                  <MobileVideoCard key={video._id} video={video} />
+                ))}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Mobile Tabs
+  const MobileTabs = () => (
+    <div style={{
+      display: 'flex',
+      overflowX: 'auto',
+      gap: '16px',
+      padding: '16px',
+      WebkitOverflowScrolling: 'touch',
+      scrollbarWidth: 'none',
+      msOverflowStyle: 'none'
+    }}>
+      {MOBILE_TABS.map(t => (
+        <div
+          key={t.value}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '20px',
+            background: tab === t.value ? 'rgba(223, 208, 184, 0.15)' : 'rgba(223, 208, 184, 0.08)',
+            color: '#DFD0B8',
+            fontSize: '14px',
+            whiteSpace: 'nowrap',
+            cursor: 'pointer',
+            border: '1px solid rgba(223, 208, 184, 0.2)',
+            transition: 'all 0.3s ease'
+          }}
+          onClick={() => setTab(t.value)}
+          onMouseEnter={e => {
+            if (tab !== t.value) {
+              e.currentTarget.style.background = 'rgba(223, 208, 184, 0.12)';
+            }
+          }}
+          onMouseLeave={e => {
+            if (tab !== t.value) {
+              e.currentTarget.style.background = 'rgba(223, 208, 184, 0.08)';
+            }
+          }}
+        >
+          {t.label}
+        </div>
+      ))}
+    </div>
+  );
+
+  // Mobile Sort Dropdown Component
+  const MobileSortDropdown = () => (
+    <div style={{ 
+      padding: '0 16px',
+      marginBottom: '16px',
+      position: 'relative',
+      zIndex: 110
+    }}>
+      <div 
+        style={{
+          fontSize: '16px',
+          fontWeight: 600,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 16px',
+          borderRadius: '12px',
+          background: sortOpen 
+            ? 'rgba(223, 208, 184, 0.15)' 
+            : 'rgba(223, 208, 184, 0.08)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(223, 208, 184, 0.2)',
+          transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          color: '#DFD0B8',
+          fontFamily: 'Lora, serif',
+          letterSpacing: '0.5px',
+        }} 
+        onClick={() => setSortOpen(s => !s)}
+      >
+        <span>SORT BY</span>
+        <span style={{ 
+          transform: sortOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          transition: 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          fontSize: '14px',
+          opacity: 0.8
+        }}>
+          ▼
+        </span>
+      </div>
+      {sortOpen && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: 16,
+          right: 16,
+          marginTop: '8px',
+          background: 'rgba(20, 20, 20, 0.95)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(223, 208, 184, 0.2)',
+          borderRadius: '16px',
+          zIndex: 130,
+          padding: '8px',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
+          animation: 'fadeInDown 0.3s ease-out',
+          overflow: 'hidden'
+        }}>
+          {SORT_OPTIONS.map((opt, index) => (
+            <div 
+              key={opt.value}
+              style={{
+                padding: '12px 16px',
+                cursor: 'pointer',
+                color: sort === opt.value ? '#FFFFFF' : '#DFD0B8',
+                fontWeight: sort === opt.value ? 600 : 400,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                borderRadius: '12px',
+                transition: 'all 0.2s ease',
+                background: sort === opt.value 
+                  ? 'rgba(223, 208, 184, 0.15)' 
+                  : 'transparent',
+                marginBottom: index < SORT_OPTIONS.length - 1 ? '4px' : '0',
+                fontFamily: 'Lora, serif',
+                fontSize: '14px',
+                letterSpacing: '0.3px',
+              }}
+              onClick={() => { 
+                setSort(opt.value); 
+                setSortOpen(false); 
+              }}
+            >
+              {sort === opt.value && (
+                <div style={{
+                  width: '6px',
+                  height: '6px',
+                  background: 'linear-gradient(135deg, #DFD0B8, #C9B896)',
+                  borderRadius: '50%',
+                  boxShadow: '0 0 10px rgba(223, 208, 184, 0.5)'
+                }} />
+              )}
+              {opt.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  // Main Render with Mobile Support
   return (
     <div style={{
       minHeight: '100vh',
@@ -878,215 +1306,371 @@ const Discover: React.FC = () => {
       position: 'relative',
       overflow: 'auto'
     }}>
-      {/* Tabs with modern styling */}
-      <div style={{
-        display: 'flex',
-        gap: '40px',
-        marginTop: '40px',
-        marginLeft: '40px',
-        fontSize: '28px',
-        fontFamily: 'Lora, serif',
-        fontWeight: 700,
-        position: 'relative',
-        zIndex: 1
-      }}>
-        {tab !== 'default' && (
-          <span
-            className="modern-tab"
-            style={{
-              opacity: 1,
-              cursor: 'pointer',
-              padding: '12px 0',
-              transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-              letterSpacing: '0.5px',
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              color: '#DFD0B8',
-            }}
-            onClick={() => setTab('default')}
-            onMouseEnter={e => {
-              e.currentTarget.style.opacity = '0.9';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.opacity = '1';
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
-          >
-            <span style={{ fontSize: '24px' }}>←</span>
-            DISCOVER
-          </span>
-        )}
-        {TABS.map(t => (
-          <span
-            key={t.value}
-            className={`modern-tab ${tab === t.value ? 'active' : ''}`}
-            style={{
-              opacity: tab === t.value ? 1 : 0.7,
-              cursor: 'pointer',
-              padding: '12px 0',
-              transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-              letterSpacing: '0.5px',
-              position: 'relative'
-            }}
-            onClick={() => setTab(t.value)}
-            onMouseEnter={e => {
-              if (tab !== t.value) {
-                e.currentTarget.style.opacity = '0.9';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }
-            }}
-            onMouseLeave={e => {
-              if (tab !== t.value) {
-                e.currentTarget.style.opacity = '0.7';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }
-            }}
-          >
-            {t.label}
-          </span>
-        ))}
-      </div>
-
-      {/* Sort Row (only for default tab) with modern styling */}
-      {tab === 'default' && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '32px',
-          marginTop: '32px',
-          marginLeft: '40px',
-          position: 'relative',
-          zIndex: 105
-        }}>
-          <SortDropdown />
-        </div>
-      )}
-
-      {/* Main Content with modern styling */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        {loading ? (
-          <div style={{ 
-            minHeight: '50vh', 
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
+      {isMobileView ? (
+        <>
+          {/* Back button centered above tabs */}
+          {tab !== 'default' && (
             <div style={{
               display: 'flex',
-              flexDirection: 'column',
+              justifyContent: 'flex-start',
               alignItems: 'center',
-              gap: '20px'
+              marginLeft: '10px',
+              padding: '16px 0 0 8px', // top and a little left padding
+              width: '100%',
+            }}>
+              <button
+                onClick={() => setTab('default')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '8px 12px',
+                  borderRadius: '80px',
+                  background: 'rgba(223, 208, 184, 0.13)',
+                  color: '#DFD0B8',
+                  fontFamily: 'Lora, serif',
+                  fontSize: '18px',
+                  fontWeight: 600,
+                  border: '1px solid rgba(223, 208, 184, 0.18)',
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.10)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  outline: 'none',
+                  height: '38px',
+                  minWidth: '35px',
+                  justifyContent: 'center',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(223, 208, 184, 0.18)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(223, 208, 184, 0.13)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+              <span style={{ fontSize: '23px',  marginBottom: '3px'}}>←</span>
+              </button>
+            </div>
+          )}
+          {/* Mobile tabs */}
+          <MobileTabs />
+          {loading ? (
+            <div style={{ 
+              minHeight: '50vh', 
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}>
               <div style={{
-                width: '60px',
-                height: '60px',
-                border: '3px solid #DFD0B8',
-                borderTop: '3px solid transparent',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite'
-              }} />
-              <div style={{ 
-                color: '#DFD0B8', 
-                fontFamily: 'Lora, serif', 
-                fontSize: '18px',
-                fontWeight: 300,
-                letterSpacing: '0.5px'
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '16px'
               }}>
-                Loading content...
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  border: '2px solid #DFD0B8',
+                  borderTop: '2px solid transparent',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                <div style={{ 
+                  color: '#DFD0B8', 
+                  fontFamily: 'Lora, serif', 
+                  fontSize: '16px'
+                }}>
+                  Loading content...
+                </div>
               </div>
             </div>
-          </div>
-        ) : error ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '60px 40px',
-            background: 'rgba(255, 77, 77, 0.05)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '20px',
-            border: '1px solid rgba(255, 77, 77, 0.2)',
-            margin: '40px',
-            animation: 'fadeInUp 0.8s ease-out'
-          }}>
+          ) : error ? (
             <div style={{
-              fontSize: '24px',
-              color: '#ff6b6b',
-              fontFamily: 'Bellefair, serif',
-              marginBottom: '10px'
+              textAlign: 'center',
+              padding: '32px 16px',
+              margin: '16px',
+              background: 'rgba(255, 77, 77, 0.05)',
+              borderRadius: '16px',
+              border: '1px solid rgba(255, 77, 77, 0.2)',
             }}>
-              {error}
-            </div>
-            <div style={{
-              fontSize: '16px',
-              color: 'rgba(255, 107, 107, 0.7)',
-              fontFamily: 'Lora, serif'
-            }}>
-              Please try refreshing the page or check your connection
-            </div>
-          </div>
-        ) : tab === 'friends' ? (
-          <FriendsFeed />
-        ) : tab === 'sunday' ? (
-          <SundayPicks />
-        ) : tab === 'trending' ? (
-          <TrendingThisWeek />
-        ) : (
-          <div className="video-grid">
-            {videos.length === 0 ? (
               <div style={{
-                gridColumn: '1/-1',
+                fontSize: '18px',
+                color: '#ff6b6b',
+                fontFamily: 'Bellefair, serif',
+                marginBottom: '8px'
+              }}>
+                {error}
+              </div>
+              <div style={{
+                fontSize: '14px',
+                color: 'rgba(255, 107, 107, 0.7)',
+                fontFamily: 'Lora, serif'
+              }}>
+                Please try refreshing the page or check your connection
+              </div>
+            </div>
+          ) : tab === 'sunday' ? (
+            <MobileSundayPicks />
+          ) : tab === 'trending' ? (
+            <MobileTrendingAndFriends />
+          ) : (
+            <div style={{ padding: '16px' }}>
+              {/* Add MobileSortDropdown here */}
+              <MobileSortDropdown />
+              {videos.length === 0 ? (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '32px 16px',
+                  background: 'rgba(223, 208, 184, 0.05)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(223, 208, 184, 0.1)',
+                  margin: '16px'
+                }}>
+                  <div style={{
+                    fontSize: '18px',
+                    color: '#DFD0B8',
+                    fontFamily: 'Bellefair, serif',
+                    marginBottom: '8px'
+                  }}>
+                    No videos found
+                  </div>
+                  <div style={{
+                    fontSize: '14px',
+                    color: 'rgba(223, 208, 184, 0.7)',
+                    fontFamily: 'Lora, serif'
+                  }}>
+                    Try adjusting your filters or check back later
+                  </div>
+                </div>
+              ) : (
+                videos.map((video, idx) => (
+                  <div
+                    key={video._id + idx}
+                    style={{
+                      animation: `fadeInUp 0.8s ease-out ${idx * 0.1}s both`
+                    }}
+                  >
+                    <MobileVideoCard video={video} />
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          {/* Tabs with modern styling */}
+          <div style={{
+            display: 'flex',
+            gap: '40px',
+            marginTop: '40px',
+            marginLeft: '40px',
+            fontSize: '28px',
+            fontFamily: 'Lora, serif',
+            fontWeight: 700,
+            position: 'relative',
+            zIndex: 1
+          }}>
+            {tab !== 'default' && (
+              <span
+                className="modern-tab"
+                style={{
+                  opacity: 1,
+                  cursor: 'pointer',
+                  padding: '12px 0',
+                  transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                  letterSpacing: '0.5px',
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  color: '#DFD0B8',
+                }}
+                onClick={() => setTab('default')}
+                onMouseEnter={e => {
+                  e.currentTarget.style.opacity = '0.9';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.opacity = '1';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <span style={{ fontSize: '24px' }}>←</span>
+                DISCOVER
+              </span>
+            )}
+            {TABS.map(t => (
+              <span
+                key={t.value}
+                className={`modern-tab ${tab === t.value ? 'active' : ''}`}
+                style={{
+                  opacity: tab === t.value ? 1 : 0.7,
+                  cursor: 'pointer',
+                  padding: '12px 0',
+                  transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                  letterSpacing: '0.5px',
+                  position: 'relative'
+                }}
+                onClick={() => setTab(t.value)}
+                onMouseEnter={e => {
+                  if (tab !== t.value) {
+                    e.currentTarget.style.opacity = '0.9';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (tab !== t.value) {
+                    e.currentTarget.style.opacity = '0.7';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }
+                }}
+              >
+                {t.label}
+              </span>
+            ))}
+          </div>
+
+          {/* Sort Row (only for default tab) with modern styling */}
+          {tab === 'default' && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '32px',
+              marginTop: '32px',
+              marginLeft: '40px',
+              position: 'relative',
+              zIndex: 105
+            }}>
+              <SortDropdown />
+            </div>
+          )}
+
+          {/* Main Content with modern styling */}
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            {loading ? (
+              <div style={{ 
+                minHeight: '50vh', 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '20px'
+                }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    border: '3px solid #DFD0B8',
+                    borderTop: '3px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  <div style={{ 
+                    color: '#DFD0B8', 
+                    fontFamily: 'Lora, serif', 
+                    fontSize: '18px',
+                    fontWeight: 300,
+                    letterSpacing: '0.5px'
+                  }}>
+                    Loading content...
+                  </div>
+                </div>
+              </div>
+            ) : error ? (
+              <div style={{
                 textAlign: 'center',
                 padding: '60px 40px',
-                background: 'rgba(223, 208, 184, 0.05)',
+                background: 'rgba(255, 77, 77, 0.05)',
                 backdropFilter: 'blur(10px)',
                 borderRadius: '20px',
-                border: '1px solid rgba(223, 208, 184, 0.1)',
+                border: '1px solid rgba(255, 77, 77, 0.2)',
+                margin: '40px',
                 animation: 'fadeInUp 0.8s ease-out'
               }}>
                 <div style={{
                   fontSize: '24px',
-                  color: '#DFD0B8',
+                  color: '#ff6b6b',
                   fontFamily: 'Bellefair, serif',
                   marginBottom: '10px'
                 }}>
-                  No videos found
+                  {error}
                 </div>
                 <div style={{
                   fontSize: '16px',
-                  color: 'rgba(223, 208, 184, 0.7)',
+                  color: 'rgba(255, 107, 107, 0.7)',
                   fontFamily: 'Lora, serif'
                 }}>
-                  Try adjusting your filters or check back later
+                  Please try refreshing the page or check your connection
                 </div>
               </div>
+            ) : tab === 'friends' ? (
+              <FriendsFeed />
+            ) : tab === 'sunday' ? (
+              <SundayPicks />
+            ) : tab === 'trending' ? (
+              <TrendingThisWeek />
             ) : (
-              videos.map((video, idx) => (
-                <div
-                  key={video._id + idx}
-                  style={{
-                    animation: `fadeInUp 0.8s ease-out ${idx * 0.1}s both`
-                  }}
-                >
-                  <VideoCard video={video} />
-                </div>
-              ))
+              <div className="video-grid">
+                {videos.length === 0 ? (
+                  <div style={{
+                    gridColumn: '1/-1',
+                    textAlign: 'center',
+                    padding: '60px 40px',
+                    background: 'rgba(223, 208, 184, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(223, 208, 184, 0.1)',
+                    animation: 'fadeInUp 0.8s ease-out'
+                  }}>
+                    <div style={{
+                      fontSize: '24px',
+                      color: '#DFD0B8',
+                      fontFamily: 'Bellefair, serif',
+                      marginBottom: '10px'
+                    }}>
+                      No videos found
+                    </div>
+                    <div style={{
+                      fontSize: '16px',
+                      color: 'rgba(223, 208, 184, 0.7)',
+                      fontFamily: 'Lora, serif'
+                    }}>
+                      Try adjusting your filters or check back later
+                    </div>
+                  </div>
+                ) : (
+                  videos.map((video, idx) => (
+                    <div
+                      key={video._id + idx}
+                      style={{
+                        animation: `fadeInUp 0.8s ease-out ${idx * 0.1}s both`
+                      }}
+                    >
+                      <VideoCard video={video} />
+                    </div>
+                  ))
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       {/* Add to List Modal */}
       {selectedVideoId && (
         <AddToListModal
           isOpen={isAddToListModalOpen}
           onClose={() => setIsAddToListModalOpen(false)}
-          videoId={selectedVideoId}
+          videoId={selectedVideoId || ''}
         />
       )}
     </div>
   );
 };
 
-export default Discover; 
+export default Discover;

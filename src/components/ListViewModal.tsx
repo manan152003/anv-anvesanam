@@ -3,6 +3,7 @@ import { getListDetails, removeVideoFromList, updateList, deleteList } from '../
 import { getVideoById } from '../services/videoService';
 import type { List } from '../types';
 import { getYouTubeThumbnail } from '../utils/youtube';
+import { useMobileView } from '../context/MobileViewContext';
 
 interface ListViewModalProps {
   listId: string | null;
@@ -12,6 +13,7 @@ interface ListViewModalProps {
 }
 
 const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModalProps) => {
+  const { isMobileView } = useMobileView();
   const [list, setList] = useState<List | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -116,29 +118,29 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
         style={{
           background: 'rgba(20, 20, 20, 0.95)',
           backdropFilter: 'blur(20px)',
-          borderRadius: '24px',
-          padding: '40px',
-          width: '90vw',
+          borderRadius: isMobileView ? '0' : '24px',
+          padding: isMobileView ? '20px' : '40px',
+          width: isMobileView ? '100%' : '90vw',
           maxWidth: '1200px',
-          maxHeight: '90vh',
+          maxHeight: isMobileView ? '100vh' : '90vh',
           overflow: 'auto',
           color: '#DFD0B8',
           fontFamily: 'Lora, serif',
-          boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
-          animation: 'slideUp 0.3s ease-out'
+          boxShadow: isMobileView ? 'none' : '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
+          animation: isMobileView ? 'slideUpMobile 0.3s ease-out' : 'slideUp 0.3s ease-out'
         }}
         onClick={e => e.stopPropagation()}
       >
         <button 
           onClick={onClose} 
           style={{ 
-            marginBottom: 32, 
+            marginBottom: isMobileView ? 16 : 32, 
             color: '#DFD0B8', 
             background: 'rgba(223, 208, 184, 0.1)',
             border: '1px solid rgba(223, 208, 184, 0.2)',
-            borderRadius: '16px',
-            padding: '12px 24px',
-            fontSize: '16px',
+            borderRadius: isMobileView ? '12px' : '16px',
+            padding: isMobileView ? '8px 16px' : '12px 24px',
+            fontSize: isMobileView ? '14px' : '16px',
             fontFamily: 'Lora, serif',
             cursor: 'pointer',
             transition: 'all 0.3s ease',
@@ -155,7 +157,7 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
             e.currentTarget.style.transform = 'translateY(0)';
           }}
         >
-          <span style={{ fontSize: '20px' }}>←</span> Back
+          <span style={{ fontSize: isMobileView ? '16px' : '20px' }}>←</span> Back
         </button>
 
         {loading ? (
@@ -216,42 +218,44 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
             <div style={{ 
               background: 'rgba(20, 20, 20, 0.8)',
               backdropFilter: 'blur(20px)',
-              borderRadius: '24px',
-              padding: '40px',
+              borderRadius: isMobileView ? '16px' : '24px',
+              padding: isMobileView ? '20px' : '40px',
               boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
-              marginBottom: '40px',
+              marginBottom: isMobileView ? '20px' : '40px',
               animation: 'slideUp 0.8s ease-out'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: isMobileView ? 16 : 24, flexWrap: isMobileView ? 'wrap' : 'nowrap', gap: isMobileView ? '8px' : '0' }}>
                 {renaming ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', width: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: isMobileView ? '8px' : '16px', width: '100%', flexWrap: isMobileView ? 'wrap' : 'nowrap' }}>
                     <input
                       value={newName}
                       onChange={e => setNewName(e.target.value)}
                       style={{ 
                         flex: 1,
-                        fontSize: 24,
-                        padding: '12px 20px',
-                        borderRadius: '16px',
+                        fontSize: isMobileView ? 18 : 24,
+                        padding: isMobileView ? '8px 16px' : '12px 20px',
+                        borderRadius: isMobileView ? '12px' : '16px',
                         border: '1px solid rgba(223, 208, 184, 0.2)',
                         background: 'rgba(223, 208, 184, 0.05)',
                         color: '#DFD0B8',
                         fontFamily: 'Lora, serif',
-                        outline: 'none'
+                        outline: 'none',
+                        minWidth: isMobileView ? '100%' : 'auto'
                       }}
                     />
                     <button 
                       onClick={handleRename} 
                       style={{ 
-                        padding: '12px 24px',
+                        padding: isMobileView ? '8px 16px' : '12px 24px',
                         background: 'rgba(223, 208, 184, 0.1)',
                         border: '1px solid rgba(223, 208, 184, 0.2)',
-                        borderRadius: '16px',
+                        borderRadius: isMobileView ? '12px' : '16px',
                         color: '#DFD0B8',
-                        fontSize: '16px',
+                        fontSize: isMobileView ? '14px' : '16px',
                         fontFamily: 'Lora, serif',
                         cursor: 'pointer',
-                        transition: 'all 0.3s ease'
+                        transition: 'all 0.3s ease',
+                        flex: isMobileView ? '1' : 'auto'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.background = 'rgba(223, 208, 184, 0.15)';
@@ -267,15 +271,16 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
                     <button 
                       onClick={() => setRenaming(false)} 
                       style={{ 
-                        padding: '12px 24px',
+                        padding: isMobileView ? '8px 16px' : '12px 24px',
                         background: 'rgba(255, 77, 77, 0.1)',
                         border: '1px solid rgba(255, 77, 77, 0.2)',
-                        borderRadius: '16px',
+                        borderRadius: isMobileView ? '12px' : '16px',
                         color: '#ff4d4f',
-                        fontSize: '16px',
+                        fontSize: isMobileView ? '14px' : '16px',
                         fontFamily: 'Lora, serif',
                         cursor: 'pointer',
-                        transition: 'all 0.3s ease'
+                        transition: 'all 0.3s ease',
+                        flex: isMobileView ? '1' : 'auto'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.background = 'rgba(255, 77, 77, 0.15)';
@@ -289,17 +294,18 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
                       Cancel
                     </button>
                     {renamingError && (
-                      <span style={{ color: '#ff4d4f', marginLeft: 16, fontSize: '14px' }}>{renamingError}</span>
+                      <span style={{ color: '#ff4d4f', marginLeft: isMobileView ? '0' : '16px', fontSize: isMobileView ? '12px' : '14px', width: '100%' }}>{renamingError}</span>
                     )}
                   </div>
                 ) : (
                   <>
                     <h2 style={{ 
-                      fontSize: 32, 
+                      fontSize: isMobileView ? 24 : 32, 
                       fontWeight: 700, 
                       margin: 0,
                       fontFamily: 'Lora, serif',
-                      color: '#DFD0B8'
+                      color: '#DFD0B8',
+                      flex: isMobileView ? '1 1 100%' : 'auto'
                     }}>
                       {list.name}
                     </h2>
@@ -309,19 +315,20 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
                           aria-label="Rename List"
                           onClick={() => setRenaming(true)} 
                           style={{ 
-                            marginLeft: 16, 
+                            marginLeft: isMobileView ? 0 : 16, 
                             color: '#DFD0B8',
                             background: 'rgba(223, 208, 184, 0.1)',
                             border: '1px solid rgba(223, 208, 184, 0.2)',
-                            borderRadius: '16px',
-                            padding: '8px 16px',
-                            fontSize: '14px',
+                            borderRadius: isMobileView ? '12px' : '16px',
+                            padding: isMobileView ? '6px 12px' : '8px 16px',
+                            fontSize: isMobileView ? '12px' : '14px',
                             fontFamily: 'Lora, serif',
                             cursor: 'pointer',
                             transition: 'all 0.3s ease',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
+                            flex: isMobileView ? '1' : 'auto'
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'rgba(223, 208, 184, 0.15)';
@@ -332,7 +339,7 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
                             e.currentTarget.style.transform = 'translateY(0)';
                           }}
                         >
-                          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <svg width={isMobileView ? "14" : "18"} height={isMobileView ? "14" : "18"} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M3 17.25V14.75L14.81 2.94C15.2 2.55 15.83 2.55 16.22 2.94L17.06 3.78C17.45 4.17 17.45 4.8 17.06 5.19L5.25 17H2.75C2.34 17 2 16.66 2 16.25V13.75L3 17.25Z" stroke="#DFD0B8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         </button>
@@ -350,19 +357,20 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
                             }
                           }}
                           style={{
-                            marginLeft: 12,
+                            marginLeft: isMobileView ? 0 : 12,
                             color: '#ff4d4f',
                             background: 'rgba(255, 77, 77, 0.1)',
                             border: '1px solid rgba(255, 77, 77, 0.2)',
-                            borderRadius: '16px',
-                            padding: '8px 16px',
-                            fontSize: '14px',
+                            borderRadius: isMobileView ? '12px' : '16px',
+                            padding: isMobileView ? '6px 12px' : '8px 16px',
+                            fontSize: isMobileView ? '12px' : '14px',
                             fontFamily: 'Lora, serif',
                             cursor: 'pointer',
                             transition: 'all 0.3s ease',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
+                            flex: isMobileView ? '1' : 'auto'
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'rgba(255, 77, 77, 0.15)';
@@ -379,13 +387,14 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
                     )}
                     {list.isDefault && (
                       <span style={{ 
-                        marginLeft: 16, 
-                        fontSize: 14, 
+                        marginLeft: isMobileView ? 0 : 16, 
+                        fontSize: isMobileView ? 12 : 14, 
                         color: 'rgba(223, 208, 184, 0.6)',
                         background: 'rgba(223, 208, 184, 0.1)',
-                        padding: '4px 12px',
-                        borderRadius: '12px',
-                        border: '1px solid rgba(223, 208, 184, 0.2)'
+                        padding: isMobileView ? '2px 8px' : '4px 12px',
+                        borderRadius: isMobileView ? '8px' : '12px',
+                        border: '1px solid rgba(223, 208, 184, 0.2)',
+                        flex: isMobileView ? '1' : 'auto'
                       }}>
                         Default List
                       </span>
@@ -394,8 +403,8 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
                 )}
               </div>
               <div style={{ 
-                marginBottom: 24, 
-                fontSize: 16,
+                marginBottom: isMobileView ? 16 : 24, 
+                fontSize: isMobileView ? 14 : 16,
                 color: 'rgba(223, 208, 184, 0.6)',
                 fontFamily: 'Lora, serif'
               }}>
@@ -405,8 +414,8 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
 
             <div style={{ 
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-              gap: '32px',
+              gridTemplateColumns: isMobileView ? '1fr' : 'repeat(auto-fill, minmax(360px, 1fr))',
+              gap: isMobileView ? '16px' : '32px',
               animation: 'fadeInUp 0.8s ease-out 0.3s both'
             }}>
               {list.videoItems.length === 0 ? (
@@ -459,19 +468,23 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
                       style={{
                         background: 'rgba(20, 20, 20, 0.8)',
                         backdropFilter: 'blur(20px)',
-                        borderRadius: '24px',
+                        borderRadius: isMobileView ? '16px' : '24px',
                         overflow: 'hidden',
                         boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)',
                         animation: `fadeInUp 0.8s ease-out ${index * 0.1}s both`,
                         transition: 'all 0.3s ease'
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-4px)';
-                        e.currentTarget.style.boxShadow = '0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(223, 208, 184, 0.15)';
+                        if (!isMobileView) {
+                          e.currentTarget.style.transform = 'translateY(-4px)';
+                          e.currentTarget.style.boxShadow = '0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(223, 208, 184, 0.15)';
+                        }
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)';
+                        if (!isMobileView) {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(223, 208, 184, 0.1)';
+                        }
                       }}
                     >
                       <div style={{ 
@@ -610,6 +623,17 @@ const ListViewModal = ({ listId, isOpen, onClose, onListDeleted }: ListViewModal
             0% {
               opacity: 0;
               transform: translateY(60px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          @keyframes slideUpMobile {
+            0% {
+              opacity: 0;
+              transform: translateY(100%);
             }
             100% {
               opacity: 1;
