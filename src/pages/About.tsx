@@ -154,9 +154,7 @@ const About: React.FC = () => {
       width: '100%',
       background: pageBackgroundColor,
       color: textColor,
-      fontFamily: "'Lora', serif", // Default body font
-      paddingTop: '80px', // Assuming a fixed header of approx this height
-      paddingBottom: '4rem',
+      fontFamily: "'Lora', serif", // Default body font 
       overflowX: 'hidden', // Prevent horizontal scroll
     }}>
       <main style={{

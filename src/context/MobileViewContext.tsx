@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
 interface MobileViewContextType {
@@ -10,6 +10,25 @@ const MobileViewContext = createContext<MobileViewContextType | undefined>(undef
 
 export const MobileViewProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isMobileView, setIsMobileView] = useState(false);
+
+  useEffect(() => {
+    // Check if window is defined (for SSR)
+    if (typeof window !== 'undefined') {
+      // Initial check
+      const checkMobile = () => {
+        setIsMobileView(window.innerWidth <= 768);
+      };
+
+      // Add event listener for window resize
+      window.addEventListener('resize', checkMobile);
+      
+      // Initial check
+      checkMobile();
+
+      // Cleanup
+      return () => window.removeEventListener('resize', checkMobile);
+    }
+  }, []);
 
   const toggleMobileView = () => {
     setIsMobileView((prev) => !prev);
