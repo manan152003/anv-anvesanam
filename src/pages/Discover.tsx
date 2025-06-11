@@ -99,7 +99,7 @@ const Discover: React.FC = () => {
         })
         .catch(() => setError('Failed to load videos'))
         .finally(() => setLoading(false));
-    } else if (tab === 'friends') {
+    } else if (tab === 'friends' || (isMobileView && tab === 'trending')) {
       if (!isAuthenticated || !user?.id) {
         setFriendsFeed([]);
         setLoading(false);
@@ -123,7 +123,7 @@ const Discover: React.FC = () => {
         .catch(() => setError('Failed to load trending videos'))
         .finally(() => setLoading(false));
     }
-  }, [tab, selectedCategory, sort]);
+  }, [tab, selectedCategory, sort, isMobileView, isAuthenticated, user?.id]);
 
   useEffect(() => {
     // For all videos, fetch latest submission and cache category name
@@ -365,6 +365,8 @@ const Discover: React.FC = () => {
   useEffect(() => {
     if (tab === 'sunday' && Array.isArray(videos)) {
       setSundayStack(videos);
+    } else if (tab === 'default') {
+      setSundayStack([]);
     }
   }, [tab, videos]);
 
@@ -406,8 +408,13 @@ const Discover: React.FC = () => {
           </div>
           <button
             onClick={() => {
-              setSundayStack(videos);
-              setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
+              fetch(`${API_URL}/videos/sunday-picks`)
+                .then(res => res.json())
+                .then(data => {
+                  setSundayStack(data);
+                  setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
+                })
+                .catch(() => setError('Failed to load Sunday Picks'));
             }}
             style={{
               padding: '12px 24px',
@@ -923,6 +930,9 @@ const Discover: React.FC = () => {
 
   // Mobile Sunday Picks Layout
   const MobileSundayPicks = () => {
+    const [swipeAnimation, setSwipeAnimation] = useState<{ x: number; y: number; rotation: number }>({ x: 0, y: 0, rotation: 0 });
+    const [isSwiping, setIsSwiping] = useState(false);
+
     if (!Array.isArray(sundayStack)) {
       return <div style={{ textAlign: 'center', color: '#ff4d4f', fontSize: 18, padding: '32px 16px' }}>Failed to load Sunday Picks</div>;
     }
@@ -949,8 +959,13 @@ const Discover: React.FC = () => {
           </div>
           <button
             onClick={() => {
-              setSundayStack(videos);
-              setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
+              fetch(`${API_URL}/videos/sunday-picks`)
+                .then(res => res.json())
+                .then(data => {
+                  setSundayStack(data);
+                  setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
+                })
+                .catch(() => setError('Failed to load Sunday Picks'));
             }}
             style={{
               padding: '12px 24px',
@@ -977,6 +992,47 @@ const Discover: React.FC = () => {
         </div>
       );
     }
+
+    const handleSwipe = (dir: 'left' | 'right') => {
+      if (!sundayStack.length) return;
+      const topVideo = sundayStack[0];
+      if (dir === 'right') {
+        navigate('/home', { state: { videoId: topVideo._id } });
+      } else if (dir === 'left') {
+        setSundayStack(prev => prev.slice(1));
+      }
+    };
+
+    const handlers = useSwipeable({
+      onSwiping: (e) => {
+        setIsSwiping(true);
+        const x = e.deltaX;
+        const y = e.deltaY * 0.3; // Reduce vertical movement
+        const rotation = x * 0.1; // Rotate based on horizontal movement
+        setSwipeAnimation({ x, y, rotation });
+      },
+      onSwipedLeft: () => {
+        setIsSwiping(false);
+        setSwipeAnimation({ x: -1000, y: 0, rotation: -30 });
+        setTimeout(() => {
+          handleSwipe('left');
+          setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
+        }, 300);
+      },
+      onSwipedRight: () => {
+        setIsSwiping(false);
+        setSwipeAnimation({ x: 1000, y: 0, rotation: 30 });
+        setTimeout(() => {
+          handleSwipe('right');
+          setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
+        }, 300);
+      },
+      onSwiped: () => {
+        setIsSwiping(false);
+        setSwipeAnimation({ x: 0, y: 0, rotation: 0 });
+      },
+      trackMouse: true,
+    });
 
     return (
       <div style={{ 
@@ -1024,14 +1080,18 @@ const Discover: React.FC = () => {
             </div>
           )}
           {/* Current video */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '100%',
-            zIndex: 2,
-          }}>
+          <div 
+            {...handlers}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: '50%',
+              transform: `translateX(-50%) translate(${swipeAnimation.x}px, ${swipeAnimation.y}px) rotate(${swipeAnimation.rotation}deg)`,
+              width: '100%',
+              zIndex: 2,
+              transition: isSwiping ? 'none' : 'all 0.2s cubic-bezier(.4,2,.6,1)',
+            }}
+          >
             <MobileVideoCard video={sundayStack[0]} />
           </div>
         </div>
@@ -1063,6 +1123,40 @@ const Discover: React.FC = () => {
       return () => clearInterval(interval);
     }, [tab, trendingVideos.length]);
 
+    if (loading) {
+      return (
+        <div style={{ 
+          minHeight: '50vh', 
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              border: '2px solid #DFD0B8',
+              borderTop: '2px solid transparent',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }} />
+            <div style={{ 
+              color: '#DFD0B8', 
+              fontFamily: 'Lora, serif', 
+              fontSize: '16px'
+            }}>
+              Loading content...
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div style={{ padding: '16px' }}>
         {/* Trending Section */}
@@ -1076,35 +1170,51 @@ const Discover: React.FC = () => {
           }}>
             Trending Now
           </div>
-          <div style={{ 
-            width: '100%', 
-            aspectRatio: '16/9',
-            borderRadius: 16,
-            overflow: 'hidden',
-            position: 'relative',
-            marginBottom: 16
-          }}>
-            <MobileVideoCard video={trendingVideos[currentIdx]} />
-          </div>
-          <div style={{ 
-            display: 'flex',
-            gap: 8,
-            justifyContent: 'center',
-            marginTop: 16
-          }}>
-            {trendingVideos.slice(0, 4).map((_, idx) => (
-              <div
-                key={idx}
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  background: currentIdx === idx ? '#DFD0B8' : 'rgba(223, 208, 184, 0.3)',
-                  transition: 'background 0.3s ease'
-                }}
-              />
-            ))}
-          </div>
+          {trendingVideos.length > 0 ? (
+            <>
+              <div style={{ 
+                width: '100%', 
+                aspectRatio: '16/9',
+                borderRadius: 16,
+                overflow: 'hidden',
+                position: 'relative',
+                marginBottom: 16
+              }}>
+                <MobileVideoCard video={trendingVideos[currentIdx]} />
+              </div>
+              <div style={{ 
+                display: 'flex',
+                gap: 8,
+                justifyContent: 'center',
+                marginTop: 16
+              }}>
+                {trendingVideos.slice(0, 4).map((_, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: currentIdx === idx ? '#DFD0B8' : 'rgba(223, 208, 184, 0.3)',
+                      transition: 'background 0.3s ease'
+                    }}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <div style={{ 
+              textAlign: 'center', 
+              fontSize: 16, 
+              color: '#DFD0B8', 
+              padding: '24px 16px',
+              background: 'rgba(223, 208, 184, 0.05)',
+              borderRadius: '12px',
+              border: '1px solid rgba(223, 208, 184, 0.1)'
+            }}>
+              No trending videos found.
+            </div>
+          )}
         </div>
 
         {/* Friends Section */}
@@ -1128,7 +1238,7 @@ const Discover: React.FC = () => {
               borderRadius: '12px',
               border: '1px solid rgba(223, 208, 184, 0.1)'
             }}>
-              No friends activity found.
+              {!isAuthenticated ? 'Sign in to see friends activity' : 'No friends activity found'}
             </div>
           ) : (
             friendsFeed.map(feed => (
@@ -1141,7 +1251,7 @@ const Discover: React.FC = () => {
                 }}>
                   @{feed.friend.username} <span style={{ fontWeight: 400, fontSize: 14 }}>recently added</span>
                 </div>
-                <div style={{ borderBottom: '1px solid #444', margin: '8px 0 16px 0' }} />
+                <div style={{ borderBottom: '1px solid #444', margin: '8px 0 16px 0', width: '100%' }} />
                 {feed.recentVideos.map(video => (
                   <MobileVideoCard key={video._id} video={video} />
                 ))}
@@ -1202,7 +1312,7 @@ const Discover: React.FC = () => {
       padding: '0 16px',
       marginBottom: '16px',
       position: 'relative',
-      zIndex: 110
+      zIndex: 5
     }}>
       <div 
         style={{
