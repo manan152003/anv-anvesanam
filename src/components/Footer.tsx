@@ -41,7 +41,8 @@ const Footer: React.FC = () => {
     minHeight: 60,
     boxSizing: 'border-box',
   };
-
+  
+  //conflict resolvesd
   // Responsive styles based on isMobileView
   const footerStyle: React.CSSProperties = {
     ...baseFooterStyle,
