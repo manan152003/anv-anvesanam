@@ -336,30 +336,31 @@ const Discover: React.FC = () => {
   }, [selectedCategory, sort]);
 
   // Friends Feed Layout (Refactored & Critiqued)
-  const FriendsFeed = () => (
-    <div style={{ margin: '48px 48px 0 48px' }}>
-      {friendsFeed.length === 0 ? (
-        <div style={{ textAlign: 'center', fontSize: 24, color: '#DFD0B8' }}>No friends activity found.</div>
-      ) : (
-        friendsFeed.map(feed => (
-          <div key={feed.friend.id} style={{ marginBottom: 48 }}>
-            <div style={{ color: '#A0A0A0', fontSize: 18, marginBottom: 4 }}>
-              @{feed.friend.username} <span style={{ fontWeight: 400, fontSize: 16 }}>recently added</span>
+  const FriendsFeed = () => {
+    const activeFeeds = friendsFeed.filter(feed => feed.recentVideos && feed.recentVideos.length > 0);
+    return (
+      <div style={{ margin: '48px 48px 0 48px' }}>
+        {activeFeeds.length === 0 ? null : (
+          activeFeeds.map(feed => (
+            <div key={feed.friend.id} style={{ marginBottom: 48 }}>
+              <div style={{ color: '#A0A0A0', fontSize: 18, marginBottom: 4 }}>
+                @{feed.friend.username} <span style={{ fontWeight: 400, fontSize: 16 }}>recently added</span>
+              </div>
+              {/* Critique: Add a horizontal line for separation */}
+              <div style={{ borderBottom: '1px solid #444', margin: '8px 0 20px 0', width: '100%' }} />
+              <div style={{ display: 'flex', gap: 32 }}>
+                {feed.recentVideos.map(video => (
+                  <div key={video._id} style={{ width: 320, height: 180, display: 'flex', alignItems: 'center' }}>
+                    <VideoCard video={video} cardWidth={320} cardHeight={180} />
+                  </div>
+                ))}
+              </div>
             </div>
-            {/* Critique: Add a horizontal line for separation */}
-            <div style={{ borderBottom: '1px solid #444', margin: '8px 0 20px 0', width: '100%' }} />
-            <div style={{ display: 'flex', gap: 32 }}>
-              {feed.recentVideos.map(video => (
-                <div key={video._id} style={{ width: 320, height: 180, display: 'flex', alignItems: 'center' }}>
-                  <VideoCard video={video} cardWidth={320} cardHeight={180} />
-                </div>
-              ))}
-            </div>
-          </div>
-        ))
-      )}
-    </div>
-  );
+          ))
+        )}
+      </div>
+    );
+  };
 
   // Sunday Picks Layout (Stacked Swipeable Cards)
   useEffect(() => {
@@ -1157,6 +1158,8 @@ const Discover: React.FC = () => {
       );
     }
 
+    const activeFeeds = friendsFeed.filter(feed => feed.recentVideos && feed.recentVideos.length > 0);
+
     return (
       <div style={{ padding: '16px' }}>
         {/* Trending Section */}
@@ -1228,20 +1231,8 @@ const Discover: React.FC = () => {
           }}>
             Friends Activity
           </div>
-          {friendsFeed.length === 0 ? (
-            <div style={{ 
-              textAlign: 'center', 
-              fontSize: 16, 
-              color: '#DFD0B8', 
-              padding: '24px 16px',
-              background: 'rgba(223, 208, 184, 0.05)',
-              borderRadius: '12px',
-              border: '1px solid rgba(223, 208, 184, 0.1)'
-            }}>
-              {!isAuthenticated ? 'Sign in to see friends activity' : 'No friends activity found'}
-            </div>
-          ) : (
-            friendsFeed.map(feed => (
+          {activeFeeds.length === 0 ? null : (
+            activeFeeds.map(feed => (
               <div key={feed.friend.id} style={{ marginBottom: 24 }}>
                 <div style={{ 
                   color: '#A0A0A0', 
